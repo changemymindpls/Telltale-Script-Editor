@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EAB439EB-4E6E-4537-8F54-9D24DB00DDE9}</ProjectGuid>
+    <ProjectGuid>{0910CD83-5881-44BD-A41F-4F9E3CE444F2}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Telltale_Script_Editor</RootNamespace>
     <AssemblyName>Telltale Script Editor</AssemblyName>
