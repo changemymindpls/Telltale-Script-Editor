@@ -5,8 +5,50 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Telltale_Script_Editor"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" 
+        TextOptions.TextRenderingMode="Auto"        
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}">
     <Grid>
-        
+        <DockPanel>
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="File" Height="25">
+                    <MenuItem Header="New">
+                        <MenuItem Header="Project"/>
+                        <MenuItem Header="Script"/>
+                    </MenuItem>
+                    <MenuItem Header="Open">
+                        <MenuItem Header="Project"/>
+                        <MenuItem Header="TTARCH2 Archive"/>
+                    </MenuItem>
+                    <MenuItem Header="Save"/>
+                    <MenuItem Header="Save As"/>
+                    <MenuItem  Header="Exit"/>
+                </MenuItem>
+                <MenuItem Header="Edit" Height="25">
+                    <MenuItem Header="Undo"/>
+                    <MenuItem Header="Redo"/>
+                </MenuItem>
+                <MenuItem Header="Project" Height="25">
+                    <MenuItem Header="Build"/>
+                    <MenuItem Header="Build and Run"/>
+                </MenuItem>
+                <MenuItem Header="Help" Height="25">
+                    <MenuItem Header="Docs"/>
+                    <MenuItem Header="About"/>
+                    <MenuItem Header="Contribute"/>
+                    <MenuItem Header="Debug">
+                        <MenuItem Header="Verbose Output" IsCheckable="true" IsChecked="True"/>
+                        <MenuItem Header="Show Project Info"/>
+                    </MenuItem>
+                </MenuItem>
+            </Menu>
+            <StackPanel></StackPanel>
+        </DockPanel>
     </Grid>
 </Window>
