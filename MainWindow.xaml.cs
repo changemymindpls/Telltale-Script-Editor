@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Telltale_Script_Editor.FileManagement;
 
 namespace Telltale_Script_Editor
 {
@@ -23,6 +24,16 @@ namespace Telltale_Script_Editor
         public MainWindow()
         {
             InitializeComponent();
+
+            FileTreeManager testManager = new FileTreeManager(editorTreeView, "C:\\Users\\Violet\\Desktop\\TestDirectory");
+        }
+
+        /// <summary>
+        /// File -> Exit
+        /// </summary>
+        private void FileExit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown(0);
         }
     }
 }
