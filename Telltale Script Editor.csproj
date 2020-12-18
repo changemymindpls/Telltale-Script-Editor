@@ -75,6 +75,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FileManagement\FileTreeManager.cs" />
+    <Compile Include="GUI\ConsoleWriter.cs" />
+    <Compile Include="GUI\ThemeManager.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

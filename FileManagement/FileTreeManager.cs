@@ -22,6 +22,11 @@ namespace Telltale_Script_Editor.FileManagement
         /// </summary>
         /// <param name="x">The TreeView to use</param>
         /// <param name="y">The directory to monitor</param>
+        /// <remarks>
+        /// TODO:
+        /// add support for verbose console output setting - as of now it just prints *everything*
+        /// write Dispose function
+        /// </remarks>
         public FileTreeManager(TreeView x, string y, ProgressBar z = null)
         {
             this.treeView = x;
@@ -116,7 +121,7 @@ namespace Telltale_Script_Editor.FileManagement
         /// <param name="y">Is Directory?</param>
         private TreeViewItem CreateTVItem(string x, bool y)
         {
-            Console.WriteLine($"Creating TVI!\n\nName: {x}\n\nIs Directory?: {y}");
+            Console.WriteLine($"Creating TVI!\nName: {x}\nIs Directory?: {y}\n");
             TreeViewItem tc =
                 new TreeViewItem();
 
@@ -131,8 +136,12 @@ namespace Telltale_Script_Editor.FileManagement
         /// </summary>
         public void Destroy()
         {
+            treeView.Items.Clear();
+            mDirectory = null;
+            progressBar = null;
+            treeView = null;
 
+            Console.WriteLine("Destroyed file tree manager!");
         }
-
     }
 }

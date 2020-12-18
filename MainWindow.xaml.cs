@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MaterialDesignThemes.Wpf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Telltale_Script_Editor.FileManagement;
+using Telltale_Script_Editor.GUI;
 
 namespace Telltale_Script_Editor
 {
@@ -25,6 +27,8 @@ namespace Telltale_Script_Editor
         {
             InitializeComponent();
 
+            ThemeManager.SetTheme(Theme.Light);
+            Console.SetOut(new ConsoleWriter(ConsoleOutputBox));
             FileTreeManager testManager = new FileTreeManager(editorTreeView, "C:\\Users\\Violet\\Desktop\\TestDirectory");
         }
 
