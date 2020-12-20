@@ -1,4 +1,5 @@
 ﻿using MaterialDesignThemes.Wpf;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,21 +24,68 @@ namespace Telltale_Script_Editor
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        private ProjectManager pManager;
+
         public MainWindow()
         {
             InitializeComponent();
-
-            ThemeManager.SetTheme(Theme.Light);
             Console.SetOut(new ConsoleWriter(ConsoleOutputBox));
-            FileTreeManager testManager = new FileTreeManager(editorTreeView, "C:\\Users\\Violet\\Desktop\\TestDirectory");
+
+            //TODO: Implement user preferences - hardcoded for now.
+            ThemeManager.SetTheme(Theme.Dark);
+        }
+
+        /// <summary>
+        /// File -> Open -> Project
+        /// </summary>
+        private void FileOpenProject_Click(object x, RoutedEventArgs y)
+        {
+            if (pManager != null) //checks if another project is open & prompts the user on whether or not to continue.
+            {
+                if (
+                    MessageBox.Show(
+                        "Are you sure you'd like to continue? Unsaved changes will be lost.",
+                        "Are you sure?",
+                        MessageBoxButton.YesNo
+                    ) != MessageBoxResult.Yes
+                   )
+                {
+                    return;
+                }
+            }
+
+            //method actually starts here :) 
+
+            OpenFileDialog oDlg = new OpenFileDialog();
+
+            oDlg.Filter = "Telltale Script Editor Project (*.tseproj)|*.tseproj";
+            oDlg.FilterIndex = 1;
+            oDlg.Multiselect = false;
+
+            if (oDlg.ShowDialog() == false)
+                return;
+
+            Console.WriteLine($"Selected project file at {oDlg.FileName}");
+
+            pManager = new ProjectManager(oDlg.FileName, editorTreeView);
         }
 
         /// <summary>
         /// File -> Exit
         /// </summary>
-        private void FileExit_Click(object sender, RoutedEventArgs e)
+        private void FileExit_Click(object x, RoutedEventArgs y)
         {
             Application.Current.Shutdown(0);
+        }
+
+        /// <summary>
+        /// Project -> Build Configuration
+        /// </summary>
+        private void ProjectBuildConfiguration_Click(object x, RoutedEventArgs y)
+        {
+            BuildConfig cfg = new BuildConfig(pManager);
+            cfg.Show();
         }
     }
 }

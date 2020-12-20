@@ -66,6 +66,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="BuildConfig.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -74,7 +78,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="BuildConfig.xaml.cs">
+      <DependentUpon>BuildConfig.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FileManagement\FileTreeManager.cs" />
+    <Compile Include="FileManagement\ProjectManager.cs" />
     <Compile Include="GUI\ConsoleWriter.cs" />
     <Compile Include="GUI\ThemeManager.cs" />
     <Compile Include="MainWindow.xaml.cs">

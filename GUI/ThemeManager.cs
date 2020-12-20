@@ -21,5 +21,14 @@ namespace Telltale_Script_Editor.GUI
             theme.SetBaseTheme(x);
             ph.SetTheme(theme);
         }
+
+        /// <summary>
+        /// Get the currently active theme
+        /// </summary>
+        /// <returns>The theme currently in use by the program.</returns>
+        public static Theme GetTheme()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

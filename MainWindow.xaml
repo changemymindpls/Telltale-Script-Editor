@@ -17,14 +17,14 @@
     <Grid>
         <DockPanel>
             <Menu DockPanel.Dock="Top">
-                <MenuItem Header="File" Height="25">
-                    <MenuItem Header="New">
-                        <MenuItem Header="Project"/>
-                        <MenuItem Header="Script"/>
+                <MenuItem Name="MenuFile"  Header="File" Height="25">
+                    <MenuItem Name="FileNew" Header="New">
+                        <MenuItem Name="FileNewProject" Header="Project"/>
+                        <MenuItem Name="FileNewScript" Header="Script"/>
                     </MenuItem>
                     <MenuItem Header="Open">
-                        <MenuItem Header="Project"/>
-                        <MenuItem Header="TTARCH2 Archive"/>
+                        <MenuItem Name="FileOpenProject" Header="Project" Click="FileOpenProject_Click"/>
+                        <MenuItem Name="FileOpenTelltaleArchive" Header="TTARCH2 Archive"/>
                     </MenuItem>
                     <MenuItem Header="Save"/>
                     <MenuItem Header="Save As"/>
@@ -37,6 +37,7 @@
                 <MenuItem Header="Project" Height="25">
                     <MenuItem Header="Build"/>
                     <MenuItem Header="Build and Run"/>
+                    <MenuItem Name="ProjectBuildConfiguration"  Header="Build Configuration" Click="ProjectBuildConfiguration_Click"/>
                 </MenuItem>
                 <MenuItem Header="Help" Height="25">
                     <MenuItem Header="Docs"/>
@@ -50,7 +51,7 @@
             </Menu>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="300"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Column="0" materialDesign:ShadowAssist.ShadowEdges="Right" materialDesign:ShadowAssist.Darken="True">

@@ -17,21 +17,26 @@ namespace Telltale_Script_Editor.FileManagement
 
         private DirectoryInfo mDirectory;
 
+        private bool allowItemCheck = false;
+
         /// <summary>
         /// Manages the file tree.
         /// </summary>
         /// <param name="x">The TreeView to use</param>
         /// <param name="y">The directory to monitor</param>
+        /// <param name="z">The ProgressBar to use</param>
+        /// <param name="a">Should items be checkable?</param>
         /// <remarks>
         /// TODO:
         /// add support for verbose console output setting - as of now it just prints *everything*
         /// write Dispose function
         /// </remarks>
-        public FileTreeManager(TreeView x, string y, ProgressBar z = null)
+        public FileTreeManager(TreeView x, string y, ProgressBar z = null, bool a = false)
         {
             this.treeView = x;
             this.mDirectory = new DirectoryInfo(y);
             this.progressBar = z;
+            this.allowItemCheck = a;
 
             PopulateFileTree();
         }
@@ -121,13 +126,13 @@ namespace Telltale_Script_Editor.FileManagement
         /// <param name="y">Is Directory?</param>
         private TreeViewItem CreateTVItem(string x, bool y)
         {
-            Console.WriteLine($"Creating TVI!\nName: {x}\nIs Directory?: {y}\n");
+            Console.WriteLine($"Creating TVI!\n\nName: {x}\n\nIs Directory?: {y}");
             TreeViewItem tc =
                 new TreeViewItem();
 
             tc.Header = x;
             if (y) tc.Tag = "Directory"; else tc.Tag = "File";
-            
+
             return tc;
         }
 
