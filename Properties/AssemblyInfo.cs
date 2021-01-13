@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyTitle("Telltale Script Editor")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Droyti")]
 [assembly: AssemblyProduct("Telltale Script Editor")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]

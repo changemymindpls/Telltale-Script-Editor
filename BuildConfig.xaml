@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Telltale_Script_Editor"
         mc:Ignorable="d"
-        Title="Build Configurator" Height="400" Width="450"
+        Title="Build Configurator" Height="400" Width="650"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
@@ -16,11 +16,16 @@
         FontFamily="{DynamicResource MaterialDesignFont}" Topmost="True" ResizeMode="NoResize">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="175"/>
+            <ColumnDefinition Width="290"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <TreeView Name="cfgTreeView" Grid.Column="0"/>
-        <Button Content="Save Configuration" Grid.Column="1" HorizontalAlignment="Left" Margin="97,327,0,0" VerticalAlignment="Top" Width="160"/>
+        <Button Name="buildCfgCancel" Content="Cancel" Grid.Column="1" HorizontalAlignment="Left" Margin="184,329,0,0" VerticalAlignment="Top" Width="160"/>
+        <Button Name="buildCfgSave" Content="Save Configuration" Grid.Column="1" HorizontalAlignment="Left" Margin="10,329,0,0" VerticalAlignment="Top" Width="160"/>
+        <ComboBox Name="buildCfgGame" Grid.Column="1" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Width="180"/>
+        <Label Grid.Column="1" HorizontalAlignment="Left" Margin="200, 55, 0, 0" VerticalAlignment="Top" Content="Game"/>
 
+        <TextBox Grid.Column="1" HorizontalAlignment="Left" Margin="10,100,0,0" VerticalAlignment="Top" Width="180"/>
+        <Label Grid.Column="1" HorizontalAlignment="Left" Margin="200, 105, 0, 0" VerticalAlignment="Top" Content="Archive Priority"/>
     </Grid>
 </Window>

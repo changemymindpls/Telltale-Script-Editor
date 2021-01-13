@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace Telltale_Script_Editor.GUI
 {
@@ -23,11 +25,18 @@ namespace Telltale_Script_Editor.GUI
 
         public override void Write(char x)
         {
-            textBox.AppendText(x.ToString());
+            Application.Current.Dispatcher.Invoke(() => textBox.AppendText(x.ToString()));
+            //textBox.AppendText(x.ToString());
         }
 
         public override void Write(string x)
         {
+            if(!Dispatcher.CurrentDispatcher.CheckAccess())
+            {
+                Application.Current.Dispatcher.Invoke(() => textBox.AppendText(x));
+                return;
+            }
+
             textBox.AppendText(x);
         }
 

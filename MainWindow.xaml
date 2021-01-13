@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Telltale_Script_Editor"
         mc:Ignorable="d"
         Title="Telltale Script Editor" Height="450" Width="800"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -20,11 +20,12 @@
                 <MenuItem Name="MenuFile"  Header="File" Height="25">
                     <MenuItem Name="FileNew" Header="New">
                         <MenuItem Name="FileNewProject" Header="Project"/>
+                        <MenuItem Name="FileNewDataSet" Header="Data Set"/>
                         <MenuItem Name="FileNewScript" Header="Script"/>
                     </MenuItem>
                     <MenuItem Header="Open">
                         <MenuItem Name="FileOpenProject" Header="Project" Click="FileOpenProject_Click"/>
-                        <MenuItem Name="FileOpenTelltaleArchive" Header="TTARCH2 Archive"/>
+                        <MenuItem Name="FileOpenTelltaleArchive" Header="Telltale Archive"/>
                     </MenuItem>
                     <MenuItem Header="Save"/>
                     <MenuItem Header="Save As"/>
@@ -59,16 +60,20 @@
                         <RowDefinition />
                         <RowDefinition Height="200"/>
                     </Grid.RowDefinitions>
-                    <TreeView x:Name="editorTreeView"  Grid.Row="0"/>
+                    <TreeView VirtualizingStackPanel.IsVirtualizing="True" x:Name="editorTreeView" Grid.Row="0"/>
                     <GridSplitter Height="3" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" ResizeBehavior="CurrentAndNext" Opacity="0.5"/>
                     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" Grid.Row="1">
                         <TextBox Text="Console output will appear here.&#x0a;Enable verbosity under Help -> Verbose Output.&#x0a;&#x0a;" TextWrapping="NoWrap" IsReadOnly="true" AcceptsReturn="True" materialDesign:TextFieldAssist.DecorationVisibility="Hidden"  BorderThickness="0" Name="ConsoleOutputBox"/>
                     </ScrollViewer>
                 </Grid>
                 <GridSplitter Width="3" HorizontalAlignment="Right" VerticalAlignment="Stretch" ResizeBehavior="CurrentAndNext" Opacity="0.5"/>
-                <ScrollViewer Background="{DynamicResource MaterialDesignPaper}" Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible">
-                    <TextBox Text="This is a test of the textbox. Not sure why it wouldn't work, but I'm going to test it anyway. Why not?" AcceptsReturn="True" AcceptsTab="True" materialDesign:TextFieldAssist.DecorationVisibility="Hidden" BorderThickness="0"/>
-                </ScrollViewer>
+                <Grid Grid.Column="1">
+                    <materialDesign:Card Name="welcomePanel" Panel.ZIndex="99" Margin="15px" Padding="5px">
+                        <Label Content="Welcome to the Telltale Script Editor. To get started, open a project!" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </materialDesign:Card>
+                    <Image Name="imageViewer" Panel.ZIndex="1"></Image>
+                    <avalonEdit:TextEditor Name="textEditor" ShowLineNumbers="True" FontFamily="{DynamicResource MaterialDesignFont}" SyntaxHighlighting="Lua" IsEnabled="False" Visibility="Hidden" BorderThickness="0" Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignPaper}"/>
+                </Grid>
             </Grid>
         </DockPanel>
     </Grid>

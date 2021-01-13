@@ -26,11 +26,11 @@ namespace Telltale_Script_Editor
         /// Build configuration menu.
         /// </summary>
         /// <remarks>
-        /// This constructor should not be used - will result in a non-functional window.
+        /// This constructor should not be used - will throw exception.
         /// </remarks>
         public BuildConfig()
         {
-            InitializeComponent();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -40,7 +40,11 @@ namespace Telltale_Script_Editor
         public BuildConfig(ProjectManager x)
         {
             InitializeComponent();
-            FileTreeManager cfgManager = new FileTreeManager(cfgTreeView, x.GetWorkingDirectory());
+            FileTreeManager cfgManager = new FileTreeManager(cfgTreeView, x.GetWorkingDirectory(), new EditorPanelManager(), null, true);
+
+            buildCfgGame.Items.Add("TWD: TTDS");
+            buildCfgGame.Items.Add("TWD S4");
         }
+
     }
 }

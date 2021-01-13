@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Telltale_Script_Editor.GUI;
 
 namespace Telltale_Script_Editor.FileManagement
 {
@@ -14,8 +21,10 @@ namespace Telltale_Script_Editor.FileManagement
 
         private TreeView      treeView;
         private ProgressBar   progressBar;
+        private EditorPanelManager epManager;
 
         private DirectoryInfo mDirectory;
+
 
         private bool allowItemCheck = false;
 
@@ -29,22 +38,29 @@ namespace Telltale_Script_Editor.FileManagement
         /// <remarks>
         /// TODO:
         /// add support for verbose console output setting - as of now it just prints *everything*
-        /// write Dispose function
-        /// </remarks>
-        public FileTreeManager(TreeView x, string y, ProgressBar z = null, bool a = false)
+        /// 
+        /// This method is really, really broken.
+        /// I'm not even sure why - don't ask. Threading completely breaks the program and causes exceptions with little to no explanation or widespread fixes.
+        /// It's probably ill-advised to try to fix the optimization here even though it might be bad on paper.
+        /// 
+        /// Hours Wasted Here: 20
+        /// 
+        /// </remarks>  
+        public FileTreeManager(TreeView w, string x, EditorPanelManager y, ProgressBar z = null, bool a = false)
         {
-            this.treeView = x;
-            this.mDirectory = new DirectoryInfo(y);
+            this.treeView = w;
+            this.mDirectory = new DirectoryInfo(x);
+            this.epManager = y;
             this.progressBar = z;
             this.allowItemCheck = a;
 
-            PopulateFileTree();
+            treeView.Items.Add(PopulateFileTree());
         }
 
         /// <summary>
         /// (Re)populates the file tree
         /// </summary>
-        public void PopulateFileTree()
+        public TreeViewItem PopulateFileTree()
         {
 
             if(progressBar != null) 
@@ -55,11 +71,11 @@ namespace Telltale_Script_Editor.FileManagement
                     + Directory.GetDirectories(mDirectory.FullName, "**", SearchOption.AllDirectories).Length;
             }
 
-            TreeViewItem root = CreateTVItem(mDirectory.Name, true);
-            treeView.Items.Add(root);
-
+            TreeViewItem root = CreateTVItem(mDirectory.Name, true, false);
             PopulateFiles(mDirectory.FullName, root);
             PopulateDirectories(mDirectory.FullName, root);
+
+            return root;
         }
        
         /// <summary>
@@ -74,7 +90,7 @@ namespace Telltale_Script_Editor.FileManagement
             foreach (string file in dFiles)
             {
                 FileInfo fi = new FileInfo(file);
-                y.Items.Add(CreateTVItem(fi.Name, false));
+                y.Items.Add(CreateTVItem(fi.Name, false, false, fi.FullName));
                 UpdateProgress();
             }
         }
@@ -91,9 +107,9 @@ namespace Telltale_Script_Editor.FileManagement
         {
             string[] dDirectories = Directory.GetDirectories(x);
             foreach (string subdirectory in dDirectories)
-            {
+               {
                 DirectoryInfo di = new DirectoryInfo(subdirectory);
-                TreeViewItem created = CreateTVItem(di.Name, true);
+                TreeViewItem created = CreateTVItem(di.Name, true, allowItemCheck, di.FullName);
                 y.Items.Add(created);
 
                 PopulateFiles(subdirectory, created);
@@ -116,7 +132,6 @@ namespace Telltale_Script_Editor.FileManagement
                     progressBar.Value++;
                 }
             }
-            //Application.DoEvents();
         }
 
         /// <summary>
@@ -124,16 +139,61 @@ namespace Telltale_Script_Editor.FileManagement
         /// </summary>
         /// <param name="x">Item Name</param>
         /// <param name="y">Is Directory?</param>
-        private TreeViewItem CreateTVItem(string x, bool y)
+        /// <param name="z">Includes Checkbox?</param>
+        /// <param name="a">Full Directory</param>
+        private TreeViewItem CreateTVItem(string x, bool y, bool z = false, string a = "")
         {
-            Console.WriteLine($"Creating TVI!\n\nName: {x}\n\nIs Directory?: {y}");
+            //Console.WriteLine($"Creating TVI!\n\nName: {x}\n\nIs Directory?: {y}");
+
             TreeViewItem tc =
                 new TreeViewItem();
+            
+            if (z)
+                tc.Header = new CheckBox() { Content = x };
+            else
+                tc.Header = x;
 
-            tc.Header = x;
-            if (y) tc.Tag = "Directory"; else tc.Tag = "File";
+            if (y) tc.Tag = new string[] { "Directory", a }; else tc.Tag = new string[] { "File", a };
 
+            if(!allowItemCheck)
+                tc.MouseDoubleClick += TreeViewDoubleClick;
+            
             return tc;
+        }
+
+        
+        /// <summary>
+        /// Double click event for TreeViewItems
+        /// </summary>
+        /// <param name="x">The TreeViewItem where the event originated.</param>
+        /// <param name="y">MouseButtonEventArgs</param>
+        private void TreeViewDoubleClick(object x, MouseButtonEventArgs y)
+        {
+            var tc = x as TreeViewItem;
+            var tag = tc.Tag as string[];
+
+            if (tag[0] == "File")
+            {
+                var fType = Path.GetExtension(tag[1]).ToLower();
+                if (fType == ".tseproj")
+                {
+                    epManager.OpenProjectFile(tag[1]);
+                }
+                else if (fType == ".lua")
+                {
+                    if (epManager.OpenTextFile(tag[1]))
+                        epManager.SetSyntaxHighlighting("Lua");
+                }
+                else if(fType == ".txt")
+                {
+                    if(epManager.OpenTextFile(tag[1]))
+                        epManager.SetSyntaxHighlighting();
+                }
+                else if (fType == ".dds")
+                {
+                    epManager.OpenImageFile(tag[1]);
+                }
+            }
         }
 
         /// <summary>
