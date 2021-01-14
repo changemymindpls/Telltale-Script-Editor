@@ -26,8 +26,8 @@
         <Label Grid.Column="1" HorizontalAlignment="Left" Margin="200, 55, 0, 0" VerticalAlignment="Top" Content="Game"/>
 
         <TextBox Grid.Column="1" HorizontalAlignment="Left" Margin="10,100,0,0" VerticalAlignment="Top" Width="180"/>
-        <Label Grid.Column="1" HorizontalAlignment="Left" Margin="200, 105, 0, 0" VerticalAlignment="Top" Content="Archive Priority"/>
+        <Label Grid.Column="1" HorizontalAlignment="Left" Margin="200, 105, 0, 0" VerticalAlignment="Top" Content="Master Priority"/>
 
-        <Label Grid.Column="1" HorizontalAlignment="Left" Margin="10, 155, 0, 0" VerticalAlignment="Top" Content="To edit individual archives, right click them in the&#x0a;main editor window and select Properties."/>
+        <Label Grid.Column="1" HorizontalAlignment="Left" Margin="10, 155, 0, 0" VerticalAlignment="Top" Content="To edit individual data sets, right click them in the&#x0a;main editor window and select Properties."/>
     </Grid>
 </Window>

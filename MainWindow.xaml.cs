@@ -78,7 +78,7 @@ namespace Telltale_Script_Editor
                 pManager.Destroy();
 
             pManager = new ProjectManager(oDlg.FileName, editorTreeView, new EditorPanelManager());
-            pManager.BuildProject();
+            //pManager.BuildProject();
 
             welcomePanel.Visibility = Visibility.Hidden;
         }
