@@ -31,13 +31,8 @@ namespace Telltale_Script_Editor.GUI
 
         public override void Write(string x)
         {
-            if(!Dispatcher.CurrentDispatcher.CheckAccess())
-            {
-                Application.Current.Dispatcher.Invoke(() => textBox.AppendText(x));
-                return;
-            }
-
-            textBox.AppendText(x);
+            Application.Current.Dispatcher.Invoke(() => textBox.AppendText(x));
+            //textBox.AppendText(x);
         }
 
         public override Encoding Encoding

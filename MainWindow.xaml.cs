@@ -22,6 +22,7 @@ using System.Windows.Shapes;
 using System.Xml;
 using Telltale_Script_Editor.FileManagement;
 using Telltale_Script_Editor.GUI;
+using Telltale_Script_Editor.Utils;
 
 namespace Telltale_Script_Editor
 {
@@ -39,7 +40,7 @@ namespace Telltale_Script_Editor
             Console.SetOut(new ConsoleWriter(ConsoleOutputBox));
 
             //TODO: Implement user preferences - hardcoded for now.
-            ThemeManager.SetTheme(Theme.Dark);
+            ThemeManager.SetTheme(Theme.Light);
         }
 
         /// <summary>
@@ -77,8 +78,16 @@ namespace Telltale_Script_Editor
             if (pManager != null)
                 pManager.Destroy();
 
-            pManager = new ProjectManager(oDlg.FileName, editorTreeView, new EditorPanelManager());
-            //pManager.BuildProject();
+            try
+            {
+                pManager = new ProjectManager(oDlg.FileName, editorTreeView, new EditorPanelManager());
+            }
+            catch(InvalidProjectException e)
+            {
+                MessageBox.Show(e.Message, "Error!");
+                pManager = null;
+                return;
+            }
 
             welcomePanel.Visibility = Visibility.Hidden;
         }
@@ -96,13 +105,52 @@ namespace Telltale_Script_Editor
         /// </summary>
         private void ProjectBuildConfiguration_Click(object x, RoutedEventArgs y)
         {
-            if(pManager == null)
+            if (!IsProjectOpen())
+                return;
+
+            BuildConfig cfg = new BuildConfig(pManager);
+            cfg.ShowDialog();
+        }
+
+        private void ProjectBuild_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsProjectOpen())
+                return;
+            
+            pManager.BuildProject();
+        }
+
+        private void ProjectBuildAndRun_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsProjectOpen())
+                return;
+
+            pManager.BuildProject(false);
+        }
+
+        private void DebugProjectInfo_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsProjectOpen())
+                return;
+
+            MessageBox.Show($".tseproj version - {pManager.project.tseproj.version}\n\nProject Name - {pManager.project.project.name}\nProject Version - {pManager.project.project.version}\nProject Author - {pManager.project.project.author}\n\nTool Game - {pManager.project.tool.game}\nTool Executable - {pManager.project.tool.executable}\nTool Master Priority - {pManager.project.tool.master_priority}", "Debug - Project Info");
+        }
+
+
+        private void HelpAbout_Click(object sender, RoutedEventArgs e)
+        {
+            About abt = new About();
+            abt.ShowDialog();
+        }
+
+        private bool IsProjectOpen()
+        {
+            if (pManager == null)
             {
                 MessageBox.Show("You need to open a project first.", "You can't do that!");
-                return;
+                return false;
             }
-            BuildConfig cfg = new BuildConfig(pManager);
-            cfg.Show();
+            else return true;
         }
 
         /* I was experimenting with SharpGL.WPF - might reinstall in the future, removed for now.

@@ -31,8 +31,9 @@ namespace Telltale_Script_Editor.FileManagement
         /// <summary>
         /// Manages the file tree.
         /// </summary>
-        /// <param name="x">The TreeView to use</param>
-        /// <param name="y">The directory to monitor</param>
+        /// <param name="w">The TreeView to use</param>
+        /// <param name="x">The directory to monitor</param>
+        /// <param name="y">The EditorPanelManager</param>
         /// <param name="z">The ProgressBar to use</param>
         /// <param name="a">Should items be checkable?</param>
         /// <remarks>
@@ -54,7 +55,9 @@ namespace Telltale_Script_Editor.FileManagement
             this.progressBar = z;
             this.allowItemCheck = a;
 
-            treeView.Items.Add(PopulateFileTree());
+            var b = PopulateFileTree();
+            treeView.Items.Add(b);
+            b.IsExpanded = true;
         }
 
         /// <summary>

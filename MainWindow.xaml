@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Telltale_Script_Editor"
         mc:Ignorable="d"
-        Title="Telltale Script Editor" Height="450" Width="800"
+        Title="Telltale Script Editor" Height="450" Width="800" MinWidth="800" MinHeight="450"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
@@ -35,18 +35,18 @@
                     <MenuItem Header="Undo"/>
                     <MenuItem Header="Redo"/>
                 </MenuItem>
-                <MenuItem Header="Project" Height="25">
-                    <MenuItem Header="Build"/>
-                    <MenuItem Header="Build and Run"/>
+                <MenuItem  Header="Project" Height="25">
+                    <MenuItem Name="ProjectBuild" Header="Build" Click="ProjectBuild_Click"/>
+                    <MenuItem Name="ProjectBuildAndRun" Header="Build and Run" Click="ProjectBuildAndRun_Click"/>
                     <MenuItem Name="ProjectBuildConfiguration"  Header="Build Configuration" Click="ProjectBuildConfiguration_Click"/>
                 </MenuItem>
                 <MenuItem Header="Help" Height="25">
-                    <MenuItem Header="Docs"/>
-                    <MenuItem Header="About"/>
+                    <MenuItem Name="HelpDocs" Header="Docs"/>
+                    <MenuItem Name="HelpAbout" Header="About" Click="HelpAbout_Click"/>
                     <MenuItem Header="Contribute"/>
                     <MenuItem Header="Debug">
                         <MenuItem Name="HelpVerboseOutput" Header="Verbose Output" IsCheckable="true" IsChecked="True"/>
-                        <MenuItem Header="Show Project Info"/>
+                        <MenuItem Name="DebugProjectInfo" Header="Show Project Info" Click="DebugProjectInfo_Click"/>
                     </MenuItem>
                 </MenuItem>
             </Menu>

@@ -1,4 +1,8 @@
 ﻿using ICSharpCode.AvalonEdit;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema.Generation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,20 +10,23 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Telltale_Script_Editor.GUI;
+using Telltale_Script_Editor.Utils;
 
 namespace Telltale_Script_Editor.FileManagement
 {
     public class ProjectManager
     {
-        private FileTreeManager    ftManager;
-        private EditorPanelManager pManager;
-
         private string pFilePath;
+
+        public  ScriptEditorProject project;
+        private FileTreeManager     ftManager;
+        private EditorPanelManager  pManager;
 
         /// <summary>
         /// Manages opened projects.
@@ -30,8 +37,14 @@ namespace Telltale_Script_Editor.FileManagement
         public ProjectManager(string x, TreeView y, EditorPanelManager z)
         {
             this.pFilePath = x;
+            var jsonText = File.ReadAllText(pFilePath);
+            if (!JsonConvert.DeserializeObject<JObject>(jsonText).IsValid(new JSchemaGenerator().Generate(typeof(ScriptEditorProject))))
+            {
+                throw new InvalidProjectException("This is not a valid Telltale Script Editor project.");
+            }
             this.ftManager = new FileTreeManager(y, this.GetWorkingDirectory(), z);
             this.pManager = z;
+            this.project = JsonConvert.DeserializeObject<ScriptEditorProject>(jsonText);
         }
 
         /// <summary>
@@ -58,6 +71,9 @@ namespace Telltale_Script_Editor.FileManagement
         /// <param name="x">Run Game After Build?</param>
         public void BuildProject(bool x = false)
         {
+            if (x)
+                throw new NotImplementedException();
+
             string y = Path.GetTempFileName();
             File.WriteAllBytes(y, ExtractResource("Telltale_Script_Editor.Resources.ttarchext.exe"));
 
@@ -67,32 +83,21 @@ namespace Telltale_Script_Editor.FileManagement
                 {
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = false,
+                    RedirectStandardError = true,
                     CreateNoWindow = true,
                     FileName = y,
                     Arguments = ""
                 }
             };
-
-
-            ttext.OutputDataReceived += new DataReceivedEventHandler((s, e) =>
-            {
-                Console.WriteLine(e.Data);
-            });
-
-            ttext.Exited += new EventHandler((s, e) =>
-            {
-                File.Delete(y);
-            });
-
             ttext.Start();
-            
-            ttext.BeginOutputReadLine();
-            
-            ttext.Close();
-
-
-            //File.Delete(y);
+            while (!ttext.StandardOutput.EndOfStream)
+            {
+                Console.WriteLine(ttext.StandardOutput.ReadLine());
+                System.Windows.Forms.Application.DoEvents();
+            }
+            ttext.WaitForExit();
+            if (ttext.HasExited)
+                File.Delete(y);
         }
 
         /// <summary>
@@ -102,7 +107,7 @@ namespace Telltale_Script_Editor.FileManagement
         /// <returns>The requested resource as a byte array.</returns>
         private static byte[] ExtractResource(string x)
         {
-            System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
+            Assembly a = Assembly.GetExecutingAssembly();
             using (Stream resFilestream = a.GetManifestResourceStream(x))
             {
                 if (resFilestream == null) return null;
@@ -114,7 +119,7 @@ namespace Telltale_Script_Editor.FileManagement
 
         internal void Destroy()
         {
-            if (!pManager.Destroy())
+            if (pManager != null && !pManager.Destroy())
                 return;
 
             if (ftManager != null)
