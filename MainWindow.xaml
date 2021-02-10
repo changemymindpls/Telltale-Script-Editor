@@ -13,40 +13,46 @@
         TextOptions.TextFormattingMode="Ideal" 
         TextOptions.TextRenderingMode="Auto"        
         Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="{DynamicResource MaterialDesignFont}">
+        FontFamily="{DynamicResource MaterialDesignFont}" ResizeMode="CanResizeWithGrip">
     <Grid>
         <DockPanel>
             <Menu DockPanel.Dock="Top">
-                <MenuItem Name="MenuFile"  Header="File" Height="25">
-                    <MenuItem Name="FileNew" Header="New">
-                        <MenuItem Name="FileNewProject" Header="Project"/>
-                        <MenuItem Name="FileNewDataSet" Header="Data Set"/>
-                        <MenuItem Name="FileNewScript" Header="Script"/>
+                <MenuItem Name="ui_menu_file"  Header="File" Height="25">
+                    <MenuItem Name="ui_menu_file_new" Header="New">
+                        <MenuItem Name="ui_menu_file_new_newProject" Header="Project" Click="ui_menu_file_new_newProject_Click"/>
+                        <MenuItem Name="ui_menu_file_new_dataSet" Header="Data Set" Click="ui_menu_file_new_dataSet_Click"/>
+                        <MenuItem Name="ui_menu_file_new_script" Header="Script" Click="ui_menu_file_new_script_Click"/>
+                        <MenuItem Name="ui_menu_file_new_folder" Header="Folder" Click="ui_menu_file_new_folder_Click"/>
                     </MenuItem>
-                    <MenuItem Header="Open">
-                        <MenuItem Name="FileOpenProject" Header="Project" Click="FileOpenProject_Click"/>
-                        <MenuItem Name="FileOpenTelltaleArchive" Header="Telltale Archive"/>
+                    <MenuItem Name="ui_menu_file_open" Header="Open">
+                        <MenuItem Name="ui_menu_file_open_project" Header="Project" Click="ui_menu_file_open_project_Click"/>
+                        <MenuItem Name="ui_menu_file_open_telltaleArchive" Header="Telltale Archive" Click="ui_menu_file_open_telltaleArchive_Click"/>
                     </MenuItem>
-                    <MenuItem Header="Save"/>
-                    <MenuItem Header="Save As"/>
-                    <MenuItem  Header="Exit"/>
+                    <MenuItem Name="ui_menu_file_import" Header="Import" Click="ui_menu_file_import_Click"/>
+                    <MenuItem Name="ui_menu_file_save" Header="Save" Click="ui_menu_file_save_Click"/>
+                    <MenuItem Name="ui_menu_file_saveAs" Header="Save As" Click="ui_menu_file_saveAs_Click"/>
+                    <Separator></Separator>
+                    <MenuItem Name="ui_menu_file_exit" Header="Exit" Click="ui_menu_file_exit_Click"/>
                 </MenuItem>
-                <MenuItem Header="Edit" Height="25">
-                    <MenuItem Header="Undo"/>
-                    <MenuItem Header="Redo"/>
+                <MenuItem Name="ui_menu_edit" Header="Edit" Height="25">
+                    <MenuItem Name="ui_menu_edit_undo" Header="Undo" Click="ui_menu_edit_undo_Click"/>
+                    <MenuItem Name="ui_menu_edit_redo" Header="Redo" Click="ui_menu_edit_redo_Click"/>
+                    <Separator></Separator>
+                    <MenuItem Name="ui_menu_edit_editorSettings" Header="Editor Settings" Click="ui_menu_edit_editorSettings_Click"/>
                 </MenuItem>
-                <MenuItem  Header="Project" Height="25">
-                    <MenuItem Name="ProjectBuild" Header="Build" Click="ProjectBuild_Click"/>
-                    <MenuItem Name="ProjectBuildAndRun" Header="Build and Run" Click="ProjectBuildAndRun_Click"/>
-                    <MenuItem Name="ProjectBuildConfiguration"  Header="Build Configuration" Click="ProjectBuildConfiguration_Click"/>
+                <MenuItem Name="ui_menu_project" Header="Project" Height="25">
+                    <MenuItem Name="ui_menu_project_build" Header="Build" Click="ui_menu_project_build_Click"/>
+                    <MenuItem Name="ui_menu_project_buildAndRun" Header="Build and Run" Click="ui_menu_project_buildAndRun_Click"/>
+                    <MenuItem Name="ui_menu_project_buildConfiguration"  Header="Build Configuration" Click="ui_menu_project_buildConfiguration_Click"/>
+                    <MenuItem Name="ui_menu_project_projectSettings" Header="Project Settings" Click="ui_menu_project_projectSettings_Click"/>
                 </MenuItem>
-                <MenuItem Header="Help" Height="25">
-                    <MenuItem Name="HelpDocs" Header="Docs"/>
-                    <MenuItem Name="HelpAbout" Header="About" Click="HelpAbout_Click"/>
-                    <MenuItem Header="Contribute"/>
-                    <MenuItem Header="Debug">
-                        <MenuItem Name="HelpVerboseOutput" Header="Verbose Output" IsCheckable="true" IsChecked="True"/>
-                        <MenuItem Name="DebugProjectInfo" Header="Show Project Info" Click="DebugProjectInfo_Click"/>
+                <MenuItem Name="ui_menu_help" Header="Help" Height="25">
+                    <MenuItem Name="ui_menu_help_docs" Header="Docs" Click="ui_menu_help_docs_Click"/>
+                    <MenuItem Name="ui_menu_help_about" Header="About" Click="ui_menu_help_about_Click"/>
+                    <MenuItem Name="ui_menu_help_contribute" Header="Contribute" Click="ui_menu_help_contribute_Click"/>
+                    <MenuItem Name="ui_menu_help_debug" Header="Debug">
+                        <MenuItem Name="ui_menu_help_debug_verboseOutput" Header="Verbose Output" IsCheckable="true" IsChecked="True" Click="ui_menu_help_debug_verboseOutput_Click"/>
+                        <MenuItem Name="ui_menu_help_debug_showProjectInfo" Header="Show Project Info" Click="ui_menu_help_debug_showProjectInfo_Click"/>
                     </MenuItem>
                 </MenuItem>
             </Menu>
@@ -56,23 +62,59 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Column="0" materialDesign:ShadowAssist.ShadowEdges="Right" materialDesign:ShadowAssist.Darken="True">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="19*"/>
+                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="200"/>
                     </Grid.RowDefinitions>
-                    <TreeView VirtualizingStackPanel.IsVirtualizing="True" x:Name="editorTreeView" Grid.Row="0"/>
-                    <GridSplitter Height="3" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" ResizeBehavior="CurrentAndNext" Opacity="0.5"/>
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" Grid.Row="1">
-                        <TextBox Text="Console output will appear here.&#x0a;Enable verbosity under Help -> Verbose Output.&#x0a;&#x0a;" TextWrapping="NoWrap" IsReadOnly="true" AcceptsReturn="True" materialDesign:TextFieldAssist.DecorationVisibility="Hidden"  BorderThickness="0" Name="ConsoleOutputBox"/>
+                    <TreeView VirtualizingStackPanel.IsVirtualizing="True" Name="ui_editor_projectTree_treeView" Grid.Row="0" Grid.ColumnSpan="2">
+                        <TreeView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Name="ui_editor_projectTree_contextMenu_refresh" Header="Refresh"></MenuItem>
+                                <MenuItem Name="ui_editor_projectTree_contextMenu_import" Header="Import"></MenuItem>
+                                <MenuItem Name="ui_editor_projectTree_contextMenu_delete" Header="Delete"></MenuItem>
+                            </ContextMenu>
+                        </TreeView.ContextMenu>
+                    </TreeView>
+                    <GridSplitter Height="3" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" ResizeBehavior="CurrentAndNext" Opacity="0.5" Grid.ColumnSpan="2"/>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" Grid.Row="1" Grid.ColumnSpan="2">
+                        <TextBox Name="ui_editor_consoleOutput" Text="Console output will appear here.&#x0a;Enable verbosity under Help -> Verbose Output.&#x0a;&#x0a;" TextWrapping="NoWrap" IsReadOnly="true" AcceptsReturn="True" materialDesign:TextFieldAssist.DecorationVisibility="Hidden"  BorderThickness="0">
+                            <TextBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Name="ui_editor_consoleOutput_contextmenu_verboseOutput" Header="Verbose Output"  IsCheckable="true" IsChecked="False" Click="ui_editor_consoleOutput_contextmenu_verboseOutput_Click"></MenuItem>
+                                    <MenuItem Name="ui_editor_consoleOutput_contextmenu_textWrapping" Header="Text Wrapping"  IsCheckable="true" IsChecked="False" Click="ui_editor_consoleOutput_contextmenu_textWrapping_Click"></MenuItem>
+                                    <MenuItem Name="ui_editor_consoleOutput_contextmenu_clear" Header="Clear"></MenuItem>
+                                </ContextMenu>
+                            </TextBox.ContextMenu>
+                        </TextBox>
                     </ScrollViewer>
                 </Grid>
                 <GridSplitter Width="3" HorizontalAlignment="Right" VerticalAlignment="Stretch" ResizeBehavior="CurrentAndNext" Opacity="0.5"/>
                 <Grid Grid.Column="1">
-                    <materialDesign:Card Name="welcomePanel" Panel.ZIndex="99" Margin="15px" Padding="5px">
-                        <Label Content="Welcome to the Telltale Script Editor. To get started, open a project!" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <materialDesign:Card Name="ui_editor_welcomePanel" Panel.ZIndex="99" Margin="15px" Padding="5px">
+                        <Label Content="Welcome to the Telltale Script Editor!&#x0a;To get started, create a new project." HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </materialDesign:Card>
-                    <Image Name="imageViewer" Panel.ZIndex="1"></Image>
-                    <avalonEdit:TextEditor Name="textEditor" ShowLineNumbers="True" FontFamily="{DynamicResource MaterialDesignFont}" SyntaxHighlighting="Lua" IsEnabled="False" Visibility="Hidden" BorderThickness="0" Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignPaper}"/>
+
+                    <Grid Name="ui_editor_imageViewer" Visibility="Hidden">
+                        <Grid.RowDefinitions>
+                            <RowDefinition MinHeight="250" Height="300"/>
+                            <RowDefinition Height="3"/>
+                            <RowDefinition MinHeight="75" Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Name="ui_editor_imageViewer_border" BorderBrush="Black" Margin="10,10,10,5" BorderThickness="1">
+                            <Image Name="ui_editor_imageViewer_image"/>
+                        </Border>
+
+                        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Opacity="0.5"/>
+
+                        <TextBlock Grid.Row="2" Name="ui_editor_imageViewer_properties" Margin="10,10,10,10" TextWrapping="Wrap" Text="Image Properties"/>
+                    </Grid>
+
+                    <avalonEdit:TextEditor Name="ui_editor_textEditor" ShowLineNumbers="True" FontFamily="{DynamicResource MaterialDesignFont}" SyntaxHighlighting="Lua" IsEnabled="False" Visibility="Hidden" BorderThickness="0" Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignPaper}"/>
                 </Grid>
             </Grid>
         </DockPanel>

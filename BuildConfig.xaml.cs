@@ -22,25 +22,25 @@ namespace Telltale_Script_Editor
     /// </summary>
     public partial class BuildConfig : Window
     {
+        private MainWindow mainWindow;
+        private EditorPanelManager editorPanelManager;
         /// <summary>
         /// Build configuration menu.
         /// </summary>
-        /// <remarks>
-        /// This constructor should not be used - will throw exception.
-        /// </remarks>
-        public BuildConfig()
+        public BuildConfig(MainWindow mainWindow, EditorPanelManager editorPanelManager)
         {
-            throw new NotSupportedException();
+            this.mainWindow = mainWindow;
+            this.editorPanelManager = editorPanelManager;
         }
 
         /// <summary>
         /// Build configuration menu - main constructor.
         /// </summary>
         /// <param name="x">The project manager to be used.</param>
-        public BuildConfig(ProjectManager x)
+        public BuildConfig(EditorPanelManager editorPanelManager)
         {
             InitializeComponent();
-            FileTreeManager cfgManager = new FileTreeManager(cfgTreeView, x.GetWorkingDirectory(), new EditorPanelManager(), null, true);
+            FileTreeManager cfgManager = new FileTreeManager(cfgTreeView, editorPanelManager.projectManager.GetWorkingDirectory(), editorPanelManager, null, true);
 
             buildCfgGame.Items.Add("TWD: TTDS");
             buildCfgGame.Items.Add("TWD S4");

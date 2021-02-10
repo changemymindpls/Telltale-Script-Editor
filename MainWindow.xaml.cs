@@ -31,126 +31,162 @@ namespace Telltale_Script_Editor
     /// </summary>
     public partial class MainWindow : Window
     {
+        //xaml windows
+        private ProjectWindow projectWindow;
+        private BuildConfig buildConfig;
+        private EditorSettingsWindow editorSettingsWindow;
 
-        private ProjectManager pManager;
+        //custom objects
+        public EditorPanelManager editorPanelManager;
 
         public MainWindow()
         {
+            //xaml initalization
             InitializeComponent();
-            Console.SetOut(new ConsoleWriter(ConsoleOutputBox));
+
+            //initalize our application
+            InitalizeApplication();
+
+            //update our UI after initalization
+            UpdateUI();
+        }
+
+        private void InitalizeApplication()
+        {
+            editorPanelManager = new EditorPanelManager(this);
+
+            Console.SetOut(new ConsoleWriter(ui_editor_consoleOutput));
 
             //TODO: Implement user preferences - hardcoded for now.
             ThemeManager.SetTheme(Theme.Light);
         }
 
-        /// <summary>
-        /// File -> Open -> Project
-        /// </summary>
-        private void FileOpenProject_Click(object x, RoutedEventArgs y)
+        public void UpdateUI()
         {
-            if (pManager != null) //checks if another project is open & prompts the user on whether or not to continue.
-            {
-                if (
-                    MessageBox.Show(
-                        "Are you sure you'd like to continue? Unsaved changes will be lost.",
-                        "Are you sure?",
-                        MessageBoxButton.YesNo
-                    ) != MessageBoxResult.Yes
-                   )
-                {
-                    return;
-                }
-            }
+            bool projectActive = editorPanelManager.projectManager != null;
 
-            //method actually starts here :) 
+            ui_menu_file_import.IsEnabled = projectActive;
+            ui_menu_file_new_dataSet.IsEnabled = projectActive;
+            ui_menu_file_new_script.IsEnabled = projectActive;
+            ui_menu_file_new_folder.IsEnabled = projectActive;
+            ui_menu_file_open_telltaleArchive.IsEnabled = projectActive;
+            ui_menu_file_save.IsEnabled = projectActive;
+            ui_menu_file_saveAs.IsEnabled = projectActive;
+            ui_menu_project.IsEnabled = projectActive;
+            ui_menu_project_build.IsEnabled = projectActive;
+            ui_menu_project_buildAndRun.IsEnabled = projectActive;
+            ui_menu_project_buildConfiguration.IsEnabled = projectActive;
+            ui_menu_project_projectSettings.IsEnabled = projectActive;
 
-            OpenFileDialog oDlg = new OpenFileDialog();
+            ui_editor_consoleOutput.TextWrapping = ui_editor_consoleOutput_contextmenu_textWrapping.IsChecked ? TextWrapping.Wrap : TextWrapping.NoWrap;
 
-            oDlg.Filter = "Telltale Script Editor Project (*.tseproj)|*.tseproj";
-            oDlg.FilterIndex = 1;
-            oDlg.Multiselect = false;
+            ui_editor_projectTree_contextMenu_delete.IsEnabled = projectActive;
+            ui_editor_projectTree_contextMenu_import.IsEnabled = projectActive;
+            ui_editor_projectTree_contextMenu_refresh.IsEnabled = projectActive;
+        }
 
-            if (oDlg.ShowDialog() == false)
-                return;
+        //------------------------------------------- XAML FUNCTIONS -------------------------------------------
 
-            Console.WriteLine($"Selected project file at {oDlg.FileName}");
+        private void ui_menu_file_exit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown(0);
+        }
 
-            if (pManager != null)
-                pManager.Destroy();
+        private void ui_menu_file_new_newProject_Click(object sender, RoutedEventArgs e)
+        {
+            projectWindow = new ProjectWindow(this, editorPanelManager);
+            projectWindow.Show();
 
-            try
-            {
-                pManager = new ProjectManager(oDlg.FileName, editorTreeView, new EditorPanelManager());
-            }
-            catch(InvalidProjectException e)
-            {
-                MessageBox.Show(e.Message, "Error!");
-                pManager = null;
-                return;
-            }
+            UpdateUI();
+        }
 
-            welcomePanel.Visibility = Visibility.Hidden;
+        private void ui_menu_project_projectSettings_Click(object sender, RoutedEventArgs e)
+        {
+            projectWindow = new ProjectWindow(this, editorPanelManager, true);
+            projectWindow.Show();
+
+            UpdateUI();
         }
 
         /// <summary>
-        /// File -> Exit
+        /// File -> Open -> Project
         /// </summary>
-        private void FileExit_Click(object x, RoutedEventArgs y)
+        private void ui_menu_file_open_project_Click(object x, RoutedEventArgs y)
         {
-            Application.Current.Shutdown(0);
+            editorPanelManager.OpenProject();
+
+            UpdateUI();
         }
 
         /// <summary>
         /// Project -> Build Configuration
         /// </summary>
-        private void ProjectBuildConfiguration_Click(object x, RoutedEventArgs y)
+        private void ui_menu_project_buildConfiguration_Click(object x, RoutedEventArgs y)
         {
-            if (!IsProjectOpen())
-                return;
+            buildConfig = new BuildConfig(editorPanelManager);
+            buildConfig.ShowDialog();
 
-            BuildConfig cfg = new BuildConfig(pManager);
-            cfg.ShowDialog();
+            UpdateUI();
         }
 
-        private void ProjectBuild_Click(object sender, RoutedEventArgs e)
+        private void ui_menu_project_build_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsProjectOpen())
-                return;
+            editorPanelManager.projectManager.BuildProject();
+
+            UpdateUI();
+        }
+
+        private void ui_menu_project_buildAndRun_Click(object sender, RoutedEventArgs e)
+        {
+            editorPanelManager.projectManager.BuildProject(true);
+
+            UpdateUI();
+        }
+
+        private void ui_menu_help_debug_showProjectInfo_Click(object sender, RoutedEventArgs e)
+        {
+            //MessageBox.Show($".tseproj version - {projectManager.project.tseproj.version}\n\nProject Name - {projectManager.project.project.name}\nProject Version - {projectManager.project.project.version}\nProject Author - {projectManager.project.project.author}\n\nTool Game - {projectManager.project.tool.game}\nTool Executable - {projectManager.project.tool.executable}\nTool Master Priority - {projectManager.project.tool.master_priority}", "Debug - Project Info");
             
-            pManager.BuildProject();
-        }
-
-        private void ProjectBuildAndRun_Click(object sender, RoutedEventArgs e)
-        {
-            if (!IsProjectOpen())
-                return;
-
-            pManager.BuildProject(false);
-        }
-
-        private void DebugProjectInfo_Click(object sender, RoutedEventArgs e)
-        {
-            if (!IsProjectOpen())
-                return;
-
-            MessageBox.Show($".tseproj version - {pManager.project.tseproj.version}\n\nProject Name - {pManager.project.project.name}\nProject Version - {pManager.project.project.version}\nProject Author - {pManager.project.project.author}\n\nTool Game - {pManager.project.tool.game}\nTool Executable - {pManager.project.tool.executable}\nTool Master Priority - {pManager.project.tool.master_priority}", "Debug - Project Info");
+            UpdateUI();
         }
 
 
-        private void HelpAbout_Click(object sender, RoutedEventArgs e)
+        private void ui_menu_help_about_Click(object sender, RoutedEventArgs e)
         {
             About abt = new About();
             abt.ShowDialog();
+
+            UpdateUI();
         }
 
-        private bool IsProjectOpen()
+        private void ui_editor_consoleOutput_contextmenu_verboseOutput_Click(object sender, RoutedEventArgs e)
         {
-            if (pManager == null)
-            {
-                MessageBox.Show("You need to open a project first.", "You can't do that!");
-                return false;
-            }
-            else return true;
+            UpdateUI();
+        }
+
+        private void ui_editor_consoleOutput_contextmenu_textWrapping_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateUI();
+        }
+
+        private void ui_menu_edit_editorSettings_Click(object sender, RoutedEventArgs e)
+        {
+            editorSettingsWindow = new EditorSettingsWindow();
+            editorSettingsWindow.Show();
+
+            UpdateUI();
+        }
+
+        private void ui_menu_file_import_Click(object sender, RoutedEventArgs e)
+        {
+            editorPanelManager.Import();
+
+            UpdateUI();
+        }
+
+        private void ui_menu_file_open_telltaleArchive_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
         /* I was experimenting with SharpGL.WPF - might reinstall in the future, removed for now.

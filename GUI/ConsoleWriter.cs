@@ -12,6 +12,8 @@ namespace Telltale_Script_Editor.GUI
 {
     public class ConsoleWriter : TextWriter
     {
+        public bool verbosity;
+
         private TextBox textBox;
         
         /// <summary>

@@ -19,12 +19,11 @@ namespace Telltale_Script_Editor.FileManagement
     public class FileTreeManager
     {
 
-        private TreeView      treeView;
-        private ProgressBar   progressBar;
-        private EditorPanelManager epManager;
+        private TreeView treeView;
+        private ProgressBar progressBar;
+        private EditorPanelManager editorPanelManager;
 
         private DirectoryInfo mDirectory;
-
 
         private bool allowItemCheck = false;
 
@@ -47,13 +46,13 @@ namespace Telltale_Script_Editor.FileManagement
         /// Hours Wasted Here: 20
         /// 
         /// </remarks>  
-        public FileTreeManager(TreeView w, string x, EditorPanelManager y, ProgressBar z = null, bool a = false)
+        public FileTreeManager(TreeView treeView, string directory, EditorPanelManager editorPanelManager, ProgressBar progressBar = null, bool allowItemCheck = false)
         {
-            this.treeView = w;
-            this.mDirectory = new DirectoryInfo(x);
-            this.epManager = y;
-            this.progressBar = z;
-            this.allowItemCheck = a;
+            this.treeView = treeView;
+            this.mDirectory = new DirectoryInfo(directory);
+            this.editorPanelManager = editorPanelManager;
+            this.progressBar = progressBar;
+            this.allowItemCheck = allowItemCheck;
 
             var b = PopulateFileTree();
             treeView.Items.Add(b);
@@ -69,9 +68,7 @@ namespace Telltale_Script_Editor.FileManagement
             if(progressBar != null) 
             {
                 progressBar.Value = 0;
-                progressBar.Maximum = 
-                    Directory.GetFiles(mDirectory.FullName, "*.*", SearchOption.AllDirectories).Length 
-                    + Directory.GetDirectories(mDirectory.FullName, "**", SearchOption.AllDirectories).Length;
+                progressBar.Maximum = Directory.GetFiles(mDirectory.FullName, "*.*", SearchOption.AllDirectories).Length + Directory.GetDirectories(mDirectory.FullName, "**", SearchOption.AllDirectories).Length;
             }
 
             TreeViewItem root = CreateTVItem(mDirectory.Name, true, false);
@@ -180,21 +177,21 @@ namespace Telltale_Script_Editor.FileManagement
                 var fType = Path.GetExtension(tag[1]).ToLower();
                 if (fType == ".tseproj")
                 {
-                    epManager.OpenProjectFile(tag[1]);
+                    editorPanelManager.OpenProjectFile(tag[1]);
                 }
                 else if (fType == ".lua")
                 {
-                    if (epManager.OpenTextFile(tag[1]))
-                        epManager.SetSyntaxHighlighting("Lua");
+                    if (editorPanelManager.OpenTextFile(tag[1]))
+                        editorPanelManager.SetSyntaxHighlighting("Lua");
                 }
                 else if(fType == ".txt")
                 {
-                    if(epManager.OpenTextFile(tag[1]))
-                        epManager.SetSyntaxHighlighting();
+                    if(editorPanelManager.OpenTextFile(tag[1]))
+                        editorPanelManager.SetSyntaxHighlighting();
                 }
                 else if (fType == ".dds")
                 {
-                    epManager.OpenImageFile(tag[1]);
+                    editorPanelManager.OpenImageFile(tag[1]);
                 }
             }
         }

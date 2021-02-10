@@ -8,8 +8,8 @@ namespace Telltale_Script_Editor.Utils
 {
     public class ToolProperties
     {
-        public int game { get; set; }
-        public string executable { get; set; }
-        public int master_priority { get; set; }
+        public int Game { get; set; }
+        public string Executable { get; set; }
+        public int Master_Priority { get; set; }
     }
 }

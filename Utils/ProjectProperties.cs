@@ -8,8 +8,8 @@ namespace Telltale_Script_Editor.Utils
 {
     public class ProjectProperties
     {
-        public string name { get; set; }
-        public string version { get; set; }
-        public string author { get; set; }
+        public string Name { get; set; }
+        public string Version { get; set; }
+        public string Author { get; set; }
     }
 }

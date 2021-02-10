@@ -1,0 +1,22 @@
+﻿<Window x:Class="Telltale_Script_Editor.EditorSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Telltale_Script_Editor"
+        mc:Ignorable="d"
+        Title="Editor Settings" Height="146" Width="284.884"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" 
+        TextOptions.TextRenderingMode="Auto"        
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}" MinHeight="145.508" MinWidth="284.884">
+    <Grid>
+        <Label Name="ui_editorVersion_label" Content="Telltale Script Editor Version: " Margin="10,10,10,0" VerticalAlignment="Top" Height="36"/>
+        <CheckBox Name="ui_darkMode_checkbox" Content="UI Dark Mode" Margin="10,51,10,0" VerticalAlignment="Top" Height="36"/>
+
+    </Grid>
+</Window>

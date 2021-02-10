@@ -11,21 +11,89 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Xml;
+using Telltale_Script_Editor.FileManagement;
+using Telltale_Script_Editor.GUI;
+using Telltale_Script_Editor.Utils;
 
 namespace Telltale_Script_Editor.GUI
 {
     public class EditorPanelManager
     {
-        private MainWindow mw;
+        private MainWindow mainWindow;
+        private IOManagement ioManagement;
+        private MessageBoxes messageBoxes;
+
+        public ProjectManager projectManager;
 
         private string currentlyOpenFile;
 
         /// <summary>
         /// Helps with the management of the multiple editor panels.
         /// </summary>
-        public EditorPanelManager()
+        public EditorPanelManager(MainWindow mainWindow)
         {
-            mw = (MainWindow)Application.Current.MainWindow;
+            this.mainWindow = mainWindow;
+
+            ioManagement = new IOManagement();
+            messageBoxes = new MessageBoxes();
+        }
+
+        public void OpenProject()
+        {
+            //checks if another project is open & prompts the user on whether or not to continue.
+            if (projectManager != null)
+            {
+                if (!messageBoxes.Warning_Confirm("Are you sure?", "Are you sure you'd like to continue? Unsaved changes will be lost."))
+                    return;
+            }
+
+            //temp variable for file path
+            string filePath = "";
+
+            //open file browser dialog
+            ioManagement.GetFilePath(ref filePath, "Telltale Script Editor Project (*.tseproj)|*.tseproj", "Open a Telltale Script Editor Project");
+
+            //if the user cancled the operation, path will be null
+            if (string.IsNullOrEmpty(filePath))
+                return;
+
+            Console.WriteLine($"Selected project file at {filePath}");
+
+            if (projectManager != null)
+                projectManager.Destroy();
+
+            try
+            {
+                projectManager = new ProjectManager(filePath, mainWindow);
+            }
+            catch (InvalidProjectException e)
+            {
+                messageBoxes.Error("Error!", e.Message);
+
+                projectManager = null;
+
+                return;
+            }
+
+            mainWindow.ui_editor_welcomePanel.Visibility = Visibility.Hidden;
+        }
+
+        public void SaveProject()
+        {
+            projectManager.ProjectFile_WriteToFile(projectManager.GetProjectFilePath());
+        }
+
+        public void Import()
+        {
+            //temp variable for file path
+            string filePath = "";
+
+            //open file browser dialog
+            ioManagement.GetFilePath(ref filePath, "Import a File");
+
+            //if the user cancled the operation, path will be null
+            if (string.IsNullOrEmpty(filePath))
+                return;
         }
 
         /// <summary>
@@ -36,7 +104,8 @@ namespace Telltale_Script_Editor.GUI
         {
             if (x == null)
             {
-                mw.textEditor.SyntaxHighlighting = null;
+                mainWindow.ui_editor_textEditor.SyntaxHighlighting = null;
+
                 return;
             }
 
@@ -44,7 +113,7 @@ namespace Telltale_Script_Editor.GUI
             {
                 using (XmlTextReader reader = new XmlTextReader(s))
                 {
-                    mw.textEditor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                    mainWindow.ui_editor_textEditor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
                 }
             }
         }
@@ -59,10 +128,10 @@ namespace Telltale_Script_Editor.GUI
                 return false;
 
             currentlyOpenFile = x;
-            mw.textEditor.Text = File.ReadAllText(x);
-            mw.textEditor.IsModified = false;
-            mw.textEditor.IsEnabled = true;
-            mw.textEditor.Visibility = Visibility.Visible;
+            mainWindow.ui_editor_textEditor.Text = File.ReadAllText(x);
+            mainWindow.ui_editor_textEditor.IsModified = false;
+            mainWindow.ui_editor_textEditor.IsEnabled = true;
+            mainWindow.ui_editor_textEditor.Visibility = Visibility.Visible;
             return true;
         }
 
@@ -74,11 +143,11 @@ namespace Telltale_Script_Editor.GUI
         {
             if (!ResetEditorView())
                 return false;
-            
-            mw.imageViewer.Source = new BitmapImage(new Uri(x));
 
-            mw.imageViewer.IsEnabled = true;
-            mw.imageViewer.Visibility = Visibility.Visible;
+            mainWindow.ui_editor_imageViewer_image.Source = new BitmapImage(new Uri(x));
+
+            mainWindow.ui_editor_imageViewer.IsEnabled = true;
+            mainWindow.ui_editor_imageViewer.Visibility = Visibility.Visible;
 
             return true;
         }
@@ -97,24 +166,25 @@ namespace Telltale_Script_Editor.GUI
         /// </summary>
         private bool ResetEditorView()
         {
-            if(mw.textEditor.IsEnabled && mw.textEditor.IsModified && currentlyOpenFile != null)
+            if(mainWindow.ui_editor_textEditor.IsEnabled && mainWindow.ui_editor_textEditor.IsModified && currentlyOpenFile != null)
             {
                 var x = MessageBox.Show("Would you like to save your changes?", "Save?", MessageBoxButton.YesNoCancel);
                 if (x == MessageBoxResult.Yes)
-                    File.WriteAllText(currentlyOpenFile, mw.textEditor.Text);
+                    File.WriteAllText(currentlyOpenFile, mainWindow.ui_editor_textEditor.Text);
                 else if (x == MessageBoxResult.Cancel)
                     return false;
             }
 
-            mw.textEditor.IsEnabled = false;
-            mw.textEditor.Visibility = Visibility.Hidden;
-            mw.textEditor.IsModified = false;
+            mainWindow.ui_editor_textEditor.IsEnabled = false;
+            mainWindow.ui_editor_textEditor.Visibility = Visibility.Hidden;
+            mainWindow.ui_editor_textEditor.IsModified = false;
 
-            mw.imageViewer.IsEnabled = false;
-            mw.imageViewer.Visibility = Visibility.Hidden;
-            mw.imageViewer.Source = null;
+            mainWindow.ui_editor_imageViewer.IsEnabled = false;
+            mainWindow.ui_editor_imageViewer.Visibility = Visibility.Hidden;
+            mainWindow.ui_editor_imageViewer_image.Source = null;
             
             currentlyOpenFile = null;
+
             return true;
         }
 

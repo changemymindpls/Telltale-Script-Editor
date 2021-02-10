@@ -22,29 +22,86 @@ namespace Telltale_Script_Editor.FileManagement
 {
     public class ProjectManager
     {
-        private string pFilePath;
+        private string projectFilePath;
 
-        public  ScriptEditorProject project;
-        private FileTreeManager     ftManager;
-        private EditorPanelManager  pManager;
+        public ScriptEditorProject project;
+        private FileTreeManager fileTreeManager;
+        private EditorPanelManager editorPanelManager;
+
+        private IOManagement ioManagement;
+        private MessageBoxes messageBoxes;
 
         /// <summary>
-        /// Manages opened projects.
+        /// Opens a Project
         /// </summary>
-        /// <param name="x">The location of the project file to manage</param>
-        /// <param name="y">The TreeView to display the project structure on.</param>
-        /// <param name="z">The TextEditor to display text in.</param>
-        public ProjectManager(string x, TreeView y, EditorPanelManager z)
+        /// <param name="projectFilePath">The location of the project file to manage</param>
+        /// <param name="treeView">The TreeView to display the project structure on.</param>
+        /// <param name="editorPanelManager">The TextEditor to display text in.</param>
+        public ProjectManager(string projectFilePath, MainWindow mainWindow)
         {
-            this.pFilePath = x;
-            var jsonText = File.ReadAllText(pFilePath);
+            this.projectFilePath = projectFilePath;
+
+            var jsonText = File.ReadAllText(projectFilePath);
+
             if (!JsonConvert.DeserializeObject<JObject>(jsonText).IsValid(new JSchemaGenerator().Generate(typeof(ScriptEditorProject))))
             {
                 throw new InvalidProjectException("This is not a valid Telltale Script Editor project.");
             }
-            this.ftManager = new FileTreeManager(y, this.GetWorkingDirectory(), z);
-            this.pManager = z;
+
+            this.fileTreeManager = new FileTreeManager(mainWindow.ui_editor_projectTree_treeView, this.GetWorkingDirectory(), editorPanelManager);
+            this.editorPanelManager = mainWindow.editorPanelManager;
             this.project = JsonConvert.DeserializeObject<ScriptEditorProject>(jsonText);
+        }
+
+        /// <summary>
+        /// Creates a new Project
+        /// </summary>
+        public ProjectManager(MainWindow mainWindow, string projectFilePath, string projectName, string projectAuthor, string projectVersion, int gameVersion)
+        {
+            //generate a new project
+            ScriptEditorProject newProject = new ScriptEditorProject();
+
+            ProjectProperties newProject_properties = new ProjectProperties();
+            newProject_properties.Author = projectAuthor;
+            newProject_properties.Name = projectName;
+            newProject_properties.Version = projectVersion;
+
+            ToolProperties newProject_toolProperties = new ToolProperties();
+            //newProject_toolProperties.Executable = ""; //game executable path
+            //newProject_toolProperties.Game = 0; //game version number
+            //newProject_toolProperties.Master_Priority = 0; //mod archive master priority
+
+            JsonProperties newProject_jsonProperties = new JsonProperties();
+            //newProject_jsonProperties.Version = ""; //tse version
+
+            newProject.Project = newProject_properties;
+            newProject.Tool = newProject_toolProperties;
+            newProject.Tseproj = newProject_jsonProperties;
+
+            this.projectFilePath = projectFilePath;
+
+            this.project = newProject;
+
+            ProjectFile_WriteToFile(projectFilePath);
+
+            this.fileTreeManager = new FileTreeManager(mainWindow.ui_editor_projectTree_treeView, this.GetWorkingDirectory(), editorPanelManager);
+        }
+
+        public void ProjectFile_WriteToFile(string projectFilePath)
+        {
+            if (File.Exists(projectFilePath))
+                ioManagement.DeleteFile(projectFilePath);
+
+            //open a stream writer to create the text file and write to it
+            using (StreamWriter file = File.CreateText(projectFilePath))
+            {
+                //get our json seralizer
+                JsonSerializer serializer = new JsonSerializer();
+
+                //seralize the data and write it to the configruation file
+                serializer.Formatting = Formatting.Indented;
+                serializer.Serialize(file, project);
+            }
         }
 
         /// <summary>
@@ -53,7 +110,7 @@ namespace Telltale_Script_Editor.FileManagement
         /// <returns>The current working directory</returns>
         public string GetWorkingDirectory()
         {
-            return Path.GetDirectoryName(this.pFilePath);
+            return Path.GetDirectoryName(projectFilePath);
         }
 
         /// <summary>
@@ -62,20 +119,21 @@ namespace Telltale_Script_Editor.FileManagement
         /// <returns>The directory of the currently open project file</returns>
         public string GetProjectFilePath()
         {
-            return pFilePath;
+            return projectFilePath;
         }
 
         /// <summary>
         /// Builds the project
         /// </summary>
-        /// <param name="x">Run Game After Build?</param>
-        public void BuildProject(bool x = false)
+        /// <param name="runGameAfterBuild">Run Game After Build?</param>
+        public void BuildProject(bool runGameAfterBuild = false)
         {
-            if (x)
+            if (runGameAfterBuild)
                 throw new NotImplementedException();
 
-            string y = Path.GetTempFileName();
-            File.WriteAllBytes(y, ExtractResource("Telltale_Script_Editor.Resources.ttarchext.exe"));
+            string temporaryFileName = Path.GetTempFileName();
+
+            File.WriteAllBytes(temporaryFileName, ExtractResource("Telltale_Script_Editor.Resources.ttarchext.exe"));
 
             Process ttext = new Process
             {
@@ -85,19 +143,25 @@ namespace Telltale_Script_Editor.FileManagement
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
-                    FileName = y,
+                    FileName = temporaryFileName,
                     Arguments = ""
                 }
             };
+
             ttext.Start();
+
             while (!ttext.StandardOutput.EndOfStream)
             {
                 Console.WriteLine(ttext.StandardOutput.ReadLine());
                 System.Windows.Forms.Application.DoEvents();
             }
+
             ttext.WaitForExit();
+
             if (ttext.HasExited)
-                File.Delete(y);
+            {
+                ioManagement.DeleteFile(temporaryFileName);
+            }
         }
 
         /// <summary>
@@ -108,22 +172,29 @@ namespace Telltale_Script_Editor.FileManagement
         private static byte[] ExtractResource(string x)
         {
             Assembly a = Assembly.GetExecutingAssembly();
+
             using (Stream resFilestream = a.GetManifestResourceStream(x))
             {
-                if (resFilestream == null) return null;
+                if (resFilestream == null)
+                {
+                    return null;
+                }
+
                 byte[] ba = new byte[resFilestream.Length];
+
                 resFilestream.Read(ba, 0, ba.Length);
+
                 return ba;
             }
         }
 
         internal void Destroy()
         {
-            if (pManager != null && !pManager.Destroy())
+            if (editorPanelManager != null && !editorPanelManager.Destroy())
                 return;
 
-            if (ftManager != null)
-                ftManager.Destroy();
+            if (fileTreeManager != null)
+                fileTreeManager.Destroy();
         }
     }
 }
