@@ -22,12 +22,15 @@ namespace Telltale_Script_Editor.FileManagement
 {
     public class ProjectManager
     {
+        //main project file path
         private string projectFilePath;
 
+        //main public objects
         public ScriptEditorProject project;
-        private FileTreeManager fileTreeManager;
-        private EditorPanelManager editorPanelManager;
-
+        public FileTreeManager fileTreeManager;
+        public EditorPanelManager editorPanelManager;
+        
+        //utillity objects
         private IOManagement ioManagement;
         private MessageBoxes messageBoxes;
 
@@ -39,16 +42,25 @@ namespace Telltale_Script_Editor.FileManagement
         /// <param name="editorPanelManager">The TextEditor to display text in.</param>
         public ProjectManager(string projectFilePath, MainWindow mainWindow)
         {
+            //get our utility objects ready since we will use them right away
+            ioManagement = new IOManagement();
+            messageBoxes = new MessageBoxes();
+
+            //get project file path
             this.projectFilePath = projectFilePath;
 
+            //parse the json data from the text file
             var jsonText = File.ReadAllText(projectFilePath);
 
+            //deseralize the object and parse the data
             if (!JsonConvert.DeserializeObject<JObject>(jsonText).IsValid(new JSchemaGenerator().Generate(typeof(ScriptEditorProject))))
             {
-                throw new InvalidProjectException("This is not a valid Telltale Script Editor project.");
+                //if the project fails to get parsed, throw an error message
+                messageBoxes.Error("Can't open project!", "This is not a valid Telltale Script Editor project.");
             }
 
-            this.fileTreeManager = new FileTreeManager(mainWindow.ui_editor_projectTree_treeView, this.GetWorkingDirectory(), editorPanelManager);
+            //assign our main public objects
+            this.fileTreeManager = new FileTreeManager(mainWindow.ui_editor_projectTree_treeView, this.GetWorkingDirectory(), mainWindow.editorPanelManager);
             this.editorPanelManager = mainWindow.editorPanelManager;
             this.project = JsonConvert.DeserializeObject<ScriptEditorProject>(jsonText);
         }
@@ -61,30 +73,41 @@ namespace Telltale_Script_Editor.FileManagement
             //generate a new project
             ScriptEditorProject newProject = new ScriptEditorProject();
 
+            //initalize our project properties
             ProjectProperties newProject_properties = new ProjectProperties();
             newProject_properties.Author = projectAuthor;
             newProject_properties.Name = projectName;
             newProject_properties.Version = projectVersion;
 
+            //initalize our project tool properties
             ToolProperties newProject_toolProperties = new ToolProperties();
-            //newProject_toolProperties.Executable = ""; //game executable path
-            //newProject_toolProperties.Game = 0; //game version number
-            //newProject_toolProperties.Master_Priority = 0; //mod archive master priority
+            newProject_toolProperties.Game = gameVersion; //game version number
+            newProject_toolProperties.Master_Priority = 950; //mod archive master priority
 
+            //initalize our project json properties
             JsonProperties newProject_jsonProperties = new JsonProperties();
             //newProject_jsonProperties.Version = ""; //tse version
 
+            //assign our project property objects to the main project
             newProject.Project = newProject_properties;
             newProject.Tool = newProject_toolProperties;
             newProject.Tseproj = newProject_jsonProperties;
 
+            //get project file path
             this.projectFilePath = projectFilePath;
 
+            //get project object
             this.project = newProject;
 
+            //write the project ofile
             ProjectFile_WriteToFile(projectFilePath);
 
+            //get our file tree manager
             this.fileTreeManager = new FileTreeManager(mainWindow.ui_editor_projectTree_treeView, this.GetWorkingDirectory(), editorPanelManager);
+
+            //create our utillity objects
+            ioManagement = new IOManagement();
+            messageBoxes = new MessageBoxes();
         }
 
         public void ProjectFile_WriteToFile(string projectFilePath)
@@ -129,7 +152,20 @@ namespace Telltale_Script_Editor.FileManagement
         public void BuildProject(bool runGameAfterBuild = false)
         {
             if (runGameAfterBuild)
-                throw new NotImplementedException();
+            {
+                //if they want to build and run the project but they don't have the executable path assigned
+                if(string.IsNullOrEmpty(project.Tool.Executable) || !File.Exists(project.Tool.Executable))
+                {
+                    //tell them they have to assign it
+                    messageBoxes.Error("No Executable Specified!", "You need to specify the Game Executable location in the Build Configuration window to use the Build and Run feature!");
+
+                    //open the window up for them
+                    editorPanelManager.Menu_OpenBuildConfig();
+
+                    //don't continue
+                    return;
+                }
+            }
 
             string temporaryFileName = Path.GetTempFileName();
 
@@ -167,24 +203,23 @@ namespace Telltale_Script_Editor.FileManagement
         /// <summary>
         /// Utility - Extracts Embedded Resources
         /// </summary>
-        /// <param name="x">The resource to extract</param>
         /// <returns>The requested resource as a byte array.</returns>
-        private static byte[] ExtractResource(string x)
+        private static byte[] ExtractResource(string resourceToExtract)
         {
-            Assembly a = Assembly.GetExecutingAssembly();
+            Assembly assembly = Assembly.GetExecutingAssembly();
 
-            using (Stream resFilestream = a.GetManifestResourceStream(x))
+            using (Stream resourceFilestream = assembly.GetManifestResourceStream(resourceToExtract))
             {
-                if (resFilestream == null)
+                if (resourceFilestream == null)
                 {
                     return null;
                 }
 
-                byte[] ba = new byte[resFilestream.Length];
+                byte[] resourceByteArray = new byte[resourceFilestream.Length];
 
-                resFilestream.Read(ba, 0, ba.Length);
+                resourceFilestream.Read(resourceByteArray, 0, resourceByteArray.Length);
 
-                return ba;
+                return resourceByteArray;
             }
         }
 

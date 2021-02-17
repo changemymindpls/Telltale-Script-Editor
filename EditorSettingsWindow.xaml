@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Telltale_Script_Editor"
         mc:Ignorable="d"
-        Title="Editor Settings" Height="146" Width="284.884"
+        Title="Editor Settings" Height="395" Width="561.884"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
@@ -16,7 +16,20 @@
         FontFamily="{DynamicResource MaterialDesignFont}" MinHeight="145.508" MinWidth="284.884">
     <Grid>
         <Label Name="ui_editorVersion_label" Content="Telltale Script Editor Version: " Margin="10,10,10,0" VerticalAlignment="Top" Height="36"/>
-        <CheckBox Name="ui_darkMode_checkbox" Content="UI Dark Mode" Margin="10,51,10,0" VerticalAlignment="Top" Height="36"/>
+        
+        <TabControl HorizontalAlignment="Left" Height="269" Margin="10,51,0,0" VerticalAlignment="Top" Width="534" TabStripPlacement="Left">
+            <TabItem Header="Application">
+                <Grid>
+                    <CheckBox Name="ui_darkMode_checkbox" Content="UI Dark Mode" Margin="10,10,10,0" VerticalAlignment="Top" Height="36"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Code Editor">
+                <Grid>
+                    <CheckBox Content="Auto Completetion" Margin="10,10,10,0" VerticalAlignment="Top" Height="36"/>
+                    <CheckBox Content="Auto Indentation" Margin="10,51,10,0" VerticalAlignment="Top" Height="36"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
 
     </Grid>
 </Window>

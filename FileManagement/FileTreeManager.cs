@@ -18,10 +18,9 @@ namespace Telltale_Script_Editor.FileManagement
 {
     public class FileTreeManager
     {
-
         private TreeView treeView;
         private ProgressBar progressBar;
-        private EditorPanelManager editorPanelManager;
+        public EditorPanelManager editorPanelManager;
 
         private DirectoryInfo mDirectory;
 
@@ -30,11 +29,6 @@ namespace Telltale_Script_Editor.FileManagement
         /// <summary>
         /// Manages the file tree.
         /// </summary>
-        /// <param name="w">The TreeView to use</param>
-        /// <param name="x">The directory to monitor</param>
-        /// <param name="y">The EditorPanelManager</param>
-        /// <param name="z">The ProgressBar to use</param>
-        /// <param name="a">Should items be checkable?</param>
         /// <remarks>
         /// TODO:
         /// add support for verbose console output setting - as of now it just prints *everything*
@@ -59,19 +53,28 @@ namespace Telltale_Script_Editor.FileManagement
             b.IsExpanded = true;
         }
 
+        public void RepopulateFileTree()
+        {
+            var fileTree = PopulateFileTree();
+
+            treeView.Items.Clear();
+            treeView.Items.Add(fileTree);
+
+            fileTree.IsExpanded = true;
+        }
+
         /// <summary>
         /// (Re)populates the file tree
         /// </summary>
         public TreeViewItem PopulateFileTree()
         {
-
             if(progressBar != null) 
             {
                 progressBar.Value = 0;
                 progressBar.Maximum = Directory.GetFiles(mDirectory.FullName, "*.*", SearchOption.AllDirectories).Length + Directory.GetDirectories(mDirectory.FullName, "**", SearchOption.AllDirectories).Length;
             }
 
-            TreeViewItem root = CreateTVItem(mDirectory.Name, true, false);
+            TreeViewItem root = CreateTreeViewItem(mDirectory.Name, true, false);
             PopulateFiles(mDirectory.FullName, root);
             PopulateDirectories(mDirectory.FullName, root);
 
@@ -81,16 +84,14 @@ namespace Telltale_Script_Editor.FileManagement
         /// <summary>
         /// Populate the files within the directory & its subdirectories.
         /// </summary>
-        /// <param name="x">The directory which you wish to populate</param>
-        /// <param name="y">The TreeViewItem representing said directory</param>
-        private void PopulateFiles(string x, TreeViewItem y)
+        private void PopulateFiles(string directory, TreeViewItem directoryTreeViewItem)
         {
-            string[] dFiles = Directory.GetFiles(x, "*.*");
+            string[] dFiles = Directory.GetFiles(directory, "*.*");
 
             foreach (string file in dFiles)
             {
                 FileInfo fi = new FileInfo(file);
-                y.Items.Add(CreateTVItem(fi.Name, false, false, fi.FullName));
+                directoryTreeViewItem.Items.Add(CreateTreeViewItem(fi.Name, false, false, fi.FullName));
                 UpdateProgress();
             }
         }
@@ -98,19 +99,18 @@ namespace Telltale_Script_Editor.FileManagement
         /// <summary>
         /// Populate the directories within the directory
         /// </summary>
-        /// <param name="x">The root directory which you wish to populate</param>
-        /// <param name="y">The TreeViewItem representing said directory</param>
         /// <remarks>
         /// Recursive.
         /// </remarks>
-        private void PopulateDirectories(string x, TreeViewItem y)
+        private void PopulateDirectories(string directory, TreeViewItem directoryTreeViewItem)
         {
-            string[] dDirectories = Directory.GetDirectories(x);
+            string[] dDirectories = Directory.GetDirectories(directory);
+
             foreach (string subdirectory in dDirectories)
-               {
+            {
                 DirectoryInfo di = new DirectoryInfo(subdirectory);
-                TreeViewItem created = CreateTVItem(di.Name, true, allowItemCheck, di.FullName);
-                y.Items.Add(created);
+                TreeViewItem created = CreateTreeViewItem(di.Name, true, allowItemCheck, di.FullName);
+                directoryTreeViewItem.Items.Add(created);
 
                 PopulateFiles(subdirectory, created);
                 PopulateDirectories(subdirectory, created);
@@ -137,23 +137,21 @@ namespace Telltale_Script_Editor.FileManagement
         /// <summary>
         /// Wrapper for TreeViewItem to allow for easier reading.
         /// </summary>
-        /// <param name="x">Item Name</param>
-        /// <param name="y">Is Directory?</param>
-        /// <param name="z">Includes Checkbox?</param>
-        /// <param name="a">Full Directory</param>
-        private TreeViewItem CreateTVItem(string x, bool y, bool z = false, string a = "")
+        private TreeViewItem CreateTreeViewItem(string itemName, bool isDirectory, bool includesCheckbox = false, string fullDirectory = "")
         {
             //Console.WriteLine($"Creating TVI!\n\nName: {x}\n\nIs Directory?: {y}");
 
-            TreeViewItem tc =
-                new TreeViewItem();
+            TreeViewItem tc = new TreeViewItem();
             
-            if (z)
-                tc.Header = new CheckBox() { Content = x };
+            if (includesCheckbox)
+                tc.Header = new CheckBox() { Content = itemName };
             else
-                tc.Header = x;
+                tc.Header = itemName;
 
-            if (y) tc.Tag = new string[] { "Directory", a }; else tc.Tag = new string[] { "File", a };
+            if (isDirectory) 
+                tc.Tag = new string[] { "Directory", fullDirectory }; 
+            else 
+                tc.Tag = new string[] { "File", fullDirectory };
 
             if(!allowItemCheck)
                 tc.MouseDoubleClick += TreeViewDoubleClick;
@@ -165,35 +163,67 @@ namespace Telltale_Script_Editor.FileManagement
         /// <summary>
         /// Double click event for TreeViewItems
         /// </summary>
-        /// <param name="x">The TreeViewItem where the event originated.</param>
-        /// <param name="y">MouseButtonEventArgs</param>
-        private void TreeViewDoubleClick(object x, MouseButtonEventArgs y)
+        private void TreeViewDoubleClick(object eventObject, MouseButtonEventArgs eventArg)
         {
-            var tc = x as TreeViewItem;
-            var tag = tc.Tag as string[];
+            var treeViewItem = eventObject as TreeViewItem;
+            var treeViewItemTag = treeViewItem.Tag as string[];
 
-            if (tag[0] == "File")
+            if (treeViewItemTag[0] == "File")
             {
-                var fType = Path.GetExtension(tag[1]).ToLower();
-                if (fType == ".tseproj")
+                var fileType = Path.GetExtension(treeViewItemTag[1]).ToLower();
+
+                if (fileType == ".tseproj")
                 {
-                    editorPanelManager.OpenProjectFile(tag[1]);
+                    editorPanelManager.OpenProjectFile(treeViewItemTag[1]);
                 }
-                else if (fType == ".lua")
+                else if (fileType == ".lua")
                 {
-                    if (editorPanelManager.OpenTextFile(tag[1]))
+                    if (editorPanelManager.OpenTextFile(treeViewItemTag[1]))
                         editorPanelManager.SetSyntaxHighlighting("Lua");
                 }
-                else if(fType == ".txt")
+                else if(fileType == ".txt")
                 {
-                    if(editorPanelManager.OpenTextFile(tag[1]))
+                    if(editorPanelManager.OpenTextFile(treeViewItemTag[1]))
                         editorPanelManager.SetSyntaxHighlighting();
                 }
-                else if (fType == ".dds")
+                else if (fileType == ".dds" || fileType == ".d3dtx" || fileType == ".header")
                 {
-                    editorPanelManager.OpenImageFile(tag[1]);
+                    editorPanelManager.OpenImageFile(treeViewItemTag[1]);
+                }
+                //else if (fType == ".wav")
+                //{
+                //    editorPanelManager.OpenImageFile(treeViewItemTag[1]);
+                //}
+            }
+
+            editorPanelManager.mainWindow.UpdateUI();
+        }
+
+        public string TreeView_GetSelectedFilePath(ref bool isDirectory)
+        {
+            string selectedItemPath = "";
+
+            TreeViewItem treeViewItem = (TreeViewItem)treeView.SelectedItem;
+
+            if(treeViewItem.Tag != null)
+            {
+                string[] treeViewItemTag = (string[])treeViewItem.Tag;
+
+                if (treeViewItemTag[0].Equals("Directory"))
+                {
+                    isDirectory = true;
+
+                    selectedItemPath = treeViewItemTag[1];
+                }
+                else if (treeViewItemTag[0].Equals("File"))
+                {
+                    isDirectory = false;
+
+                    selectedItemPath = treeViewItemTag[1];
                 }
             }
+
+            return selectedItemPath;
         }
 
         /// <summary>

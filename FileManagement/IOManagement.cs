@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using Ookii.Dialogs.Wpf;
@@ -565,8 +566,31 @@ namespace Telltale_Script_Editor.FileManagement
             }
         }
 
+        public void SaveFile(ref string newFilePath, string initalDirectory, string title = "Save a File", string extension = "")
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.SupportMultiDottedExtensions = false;
+            saveFileDialog.Title = title;
+            saveFileDialog.InitialDirectory = initalDirectory;
+            saveFileDialog.CheckPathExists = true;
+            saveFileDialog.ValidateNames = true;
+
+            if (!string.IsNullOrEmpty(extension))
+            {
+                saveFileDialog.AddExtension = true;
+                saveFileDialog.DefaultExt = extension;
+            }
+
+            DialogResult result = saveFileDialog.ShowDialog();
+
+            if(result == DialogResult.OK)
+            {
+                newFilePath = saveFileDialog.FileName;
+            }
+        }
+
         /// <summary>
-        /// Opens a FileBrowserDialog for the user to select a file path.
+        /// Opens a FileBrowserDialog for the user to select a file path. (NO MULTI-SELECT)
         /// </summary>
         /// <param name="newFilePath"></param>
         /// <param name="dialogTitle"></param>
@@ -586,6 +610,31 @@ namespace Telltale_Script_Editor.FileManagement
                 if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(openFileDialog.FileName))
                 {
                     newFilePath = openFileDialog.FileName;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Opens a FileBrowserDialog for the user to select a file path or multiple. (MULTI-SELECT SUPPORT)
+        /// </summary>
+        /// <param name="newFilePaths"></param>
+        /// <param name="dialogTitle"></param>
+        public void GetFilePaths(ref List<string> newFilePaths, string dialogTitle = "Select a File Path")
+        {
+            //open a file dialog
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                //set our file dialog options here
+                openFileDialog.Multiselect = true;
+                openFileDialog.Title = dialogTitle;
+
+                //open the dialog and cache the result
+                DialogResult result = openFileDialog.ShowDialog();
+
+                //if the user selects a file, return that string.
+                if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(openFileDialog.FileName))
+                {
+                    newFilePaths = new List<string>(openFileDialog.FileNames);
                 }
             }
         }
@@ -619,6 +668,22 @@ namespace Telltale_Script_Editor.FileManagement
         }
 
         /// <summary>
+        /// Opens File Explorer to the desired path.
+        /// </summary>
+        /// <param name="path"></param>
+        public void OpenInFileExplorer(string path)
+        {
+            //create a windows explorer processinfo to be exectued
+            ProcessStartInfo processStartInfo = new ProcessStartInfo();
+            processStartInfo.FileName = path;
+            processStartInfo.UseShellExecute = true;
+            processStartInfo.Verb = "open";
+
+            //start the process
+            Process.Start(processStartInfo);
+        }
+
+        /// <summary>
         /// Opens a MessageBox that prompts the user if they want to proceed with said action.
         /// <para>DialogResult.Yes - returns true</para>
         /// <para>DialogResult.No - returns false</para>
@@ -627,7 +692,7 @@ namespace Telltale_Script_Editor.FileManagement
         /// <param name="title"></param>
         /// <param name="icon"></param>
         /// <returns></returns>
-        public bool MessageBox_Confirmation(string description, string title, MessageBoxIcon icon = MessageBoxIcon.Warning)
+        private bool MessageBox_Confirmation(string description, string title, MessageBoxIcon icon = MessageBoxIcon.Warning)
         {
             //get our message box
             DialogResult messageBox = MessageBox.Show(description, title, MessageBoxButtons.YesNo, icon);

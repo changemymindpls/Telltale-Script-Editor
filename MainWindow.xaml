@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="Telltale Script Editor" Height="450" Width="800" MinWidth="800" MinHeight="450"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+        xmlns:sharpGL="clr-namespace:SharpGL.WPF;assembly=SharpGL.WPF"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -29,20 +30,35 @@
                         <MenuItem Name="ui_menu_file_open_telltaleArchive" Header="Telltale Archive" Click="ui_menu_file_open_telltaleArchive_Click"/>
                     </MenuItem>
                     <MenuItem Name="ui_menu_file_import" Header="Import" Click="ui_menu_file_import_Click"/>
-                    <MenuItem Name="ui_menu_file_save" Header="Save" Click="ui_menu_file_save_Click"/>
-                    <MenuItem Name="ui_menu_file_saveAs" Header="Save As" Click="ui_menu_file_saveAs_Click"/>
+                    <MenuItem Name="ui_menu_file_save" InputGestureText="Ctrl+S" Header="Save" Click="ui_menu_file_save_Click"/>
+                    <MenuItem Name="ui_menu_file_saveAs" InputGestureText="Ctrl+Shift+S" Header="Save As" Click="ui_menu_file_saveAs_Click"/>
+                    <Separator></Separator>
+                    <MenuItem Name="ui_menu_file_saveProject" Header="Save Project" Click="ui_menu_file_saveProject_Click"/>
+                    <MenuItem Name="ui_menu_file_saveProjectAs" Header="Save Project As" Click="ui_menu_file_saveProjectAs_Click"/>
                     <Separator></Separator>
                     <MenuItem Name="ui_menu_file_exit" Header="Exit" Click="ui_menu_file_exit_Click"/>
                 </MenuItem>
                 <MenuItem Name="ui_menu_edit" Header="Edit" Height="25">
-                    <MenuItem Name="ui_menu_edit_undo" Header="Undo" Click="ui_menu_edit_undo_Click"/>
-                    <MenuItem Name="ui_menu_edit_redo" Header="Redo" Click="ui_menu_edit_redo_Click"/>
+                    <MenuItem Name="ui_menu_edit_undo" Header="Undo" InputGestureText="Ctrl+Z" Click="ui_menu_edit_undo_Click"/>
+                    <MenuItem Name="ui_menu_edit_redo" Header="Redo" InputGestureText="Ctrl+Y" Click="ui_menu_edit_redo_Click"/>
+                    <MenuItem Name="ui_menu_edit_copy" Header="Copy" InputGestureText="Ctrl+C" Click="ui_menu_edit_copy_Click"/>
+                    <MenuItem Name="ui_menu_edit_paste" Header="Paste" InputGestureText="Ctrl+V" Click="ui_menu_edit_paste_Click"/>
+                    <Separator></Separator>
+                    <MenuItem Name="ui_menu_edit_texture" Header="Texture">
+                        <MenuItem Name="ui_menu_edit_texture_convertToDDS" Header="Convert To DDS" Click="ui_menu_edit_texture_convertToDDS_Click"/>
+                        <MenuItem Name="ui_menu_edit_texture_convertToD3DTX" Header="Convert To D3DTX" Click="ui_menu_edit_texture_convertToD3DTX_Click"/>
+                    </MenuItem>
+                    <MenuItem Name="ui_menu_edit_script" Header="Script">
+                        <MenuItem Name="ui_menu_edit_script_compile" Header="Compile" Click="ui_menu_edit_script_compile_Click"/>
+                        <MenuItem Name="ui_menu_edit_script_decompile" Header="Decompile" Click="ui_menu_edit_script_decompile_Click"/>
+                    </MenuItem>
                     <Separator></Separator>
                     <MenuItem Name="ui_menu_edit_editorSettings" Header="Editor Settings" Click="ui_menu_edit_editorSettings_Click"/>
                 </MenuItem>
                 <MenuItem Name="ui_menu_project" Header="Project" Height="25">
                     <MenuItem Name="ui_menu_project_build" Header="Build" Click="ui_menu_project_build_Click"/>
                     <MenuItem Name="ui_menu_project_buildAndRun" Header="Build and Run" Click="ui_menu_project_buildAndRun_Click"/>
+                    <Separator></Separator>
                     <MenuItem Name="ui_menu_project_buildConfiguration"  Header="Build Configuration" Click="ui_menu_project_buildConfiguration_Click"/>
                     <MenuItem Name="ui_menu_project_projectSettings" Header="Project Settings" Click="ui_menu_project_projectSettings_Click"/>
                 </MenuItem>
@@ -54,6 +70,7 @@
                         <MenuItem Name="ui_menu_help_debug_verboseOutput" Header="Verbose Output" IsCheckable="true" IsChecked="True" Click="ui_menu_help_debug_verboseOutput_Click"/>
                         <MenuItem Name="ui_menu_help_debug_showProjectInfo" Header="Show Project Info" Click="ui_menu_help_debug_showProjectInfo_Click"/>
                     </MenuItem>
+                    <MenuItem Name="ui_menu_help_printConsoleToFile" Header="Save Console Output" Click="ui_menu_help_printConsoleToFile_Click"/>
                 </MenuItem>
             </Menu>
             <Grid>
@@ -72,10 +89,15 @@
                     </Grid.RowDefinitions>
                     <TreeView VirtualizingStackPanel.IsVirtualizing="True" Name="ui_editor_projectTree_treeView" Grid.Row="0" Grid.ColumnSpan="2">
                         <TreeView.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Name="ui_editor_projectTree_contextMenu_refresh" Header="Refresh"></MenuItem>
-                                <MenuItem Name="ui_editor_projectTree_contextMenu_import" Header="Import"></MenuItem>
-                                <MenuItem Name="ui_editor_projectTree_contextMenu_delete" Header="Delete"></MenuItem>
+                            <ContextMenu Name="ui_editor_projectTre_contextMenu" Opened="ui_editor_projectTre_contextMenu_Opened">
+                                <MenuItem Name="ui_editor_projectTree_contextMenu_new" Header="New">
+                                    <MenuItem Name="ui_editor_projectTree_contextMenu_new_script" Header="Script" Click="ui_editor_projectTree_contextMenu_new_script_Click"></MenuItem>
+                                    <MenuItem Name="ui_editor_projectTree_contextMenu_new_folder" Header="Folder" Click="ui_editor_projectTree_contextMenu_new_folder_Click"></MenuItem>
+                                </MenuItem>
+                                <MenuItem Name="ui_editor_projectTree_contextMenu_import" Header="Import" Click="ui_editor_projectTree_contextMenu_import_Click"></MenuItem>
+                                <MenuItem Name="ui_editor_projectTree_contextMenu_delete" Header="Delete" Click="ui_editor_projectTree_contextMenu_delete_Click"></MenuItem>
+                                <MenuItem Name="ui_editor_projectTree_contextMenu_refresh" Header="Refresh" Click="ui_editor_projectTree_contextMenu_refresh_Click"></MenuItem>
+                                <MenuItem Name="ui_editor_projectTree_contextMenu_openExplorer" Header="Open In Explorer" Click="ui_editor_projectTree_contextMenu_openExplorer_Click"></MenuItem>
                             </ContextMenu>
                         </TreeView.ContextMenu>
                     </TreeView>
@@ -94,7 +116,10 @@
                 </Grid>
                 <GridSplitter Width="3" HorizontalAlignment="Right" VerticalAlignment="Stretch" ResizeBehavior="CurrentAndNext" Opacity="0.5"/>
                 <Grid Grid.Column="1">
-                    <materialDesign:Card Name="ui_editor_welcomePanel" Panel.ZIndex="99" Margin="15px" Padding="5px">
+                    
+                    <!-- <sharpGL:OpenGLControl Name="ui_openGL_window" OpenGLDraw="ui_openGL_window_OpenGLDraw" Initialized="ui_openGL_window_Initialized" Resized="ui_openGL_window_Resized" DrawFPS="True" RenderContextType="FBO"/> -->
+
+                    <materialDesign:Card Visibility="Hidden" Name="ui_editor_welcomePanel" Margin="15px" Padding="5px">
                         <Label Content="Welcome to the Telltale Script Editor!&#x0a;To get started, create a new project." HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </materialDesign:Card>
 
@@ -114,7 +139,19 @@
                         <TextBlock Grid.Row="2" Name="ui_editor_imageViewer_properties" Margin="10,10,10,10" TextWrapping="Wrap" Text="Image Properties"/>
                     </Grid>
 
-                    <avalonEdit:TextEditor Name="ui_editor_textEditor" ShowLineNumbers="True" FontFamily="{DynamicResource MaterialDesignFont}" SyntaxHighlighting="Lua" IsEnabled="False" Visibility="Hidden" BorderThickness="0" Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignPaper}"/>
+                    <avalonEdit:TextEditor Name="ui_editor_textEditor" ShowLineNumbers="True" FontFamily="{DynamicResource MaterialDesignFont}" SyntaxHighlighting="Lua" IsEnabled="False" Visibility="Hidden" BorderThickness="0" Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignPaper}" TextChanged="ui_editor_textEditor_TextChanged">
+                        <avalonEdit:TextEditor.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Name="ui_editor_textEditor_contextMenu_undo" Header="Undo" InputGestureText="Ctrl+Z" Click="ui_editor_textEditor_contextMenu_undo_Click"></MenuItem>
+                                <MenuItem Name="ui_editor_textEditor_contextMenu_redo" Header="Redo" InputGestureText="Ctrl+Y" Click="ui_editor_textEditor_contextMenu_redo_Click"></MenuItem>
+                                <MenuItem Name="ui_editor_textEditor_contextMenu_copy" Header="Copy" InputGestureText="Ctrl+C" Click="ui_editor_textEditor_contextMenu_copy_Click"></MenuItem>
+                                <MenuItem Name="ui_editor_textEditor_contextMenu_paste" Header="Paste" InputGestureText="Ctrl+V" Click="ui_editor_textEditor_contextMenu_paste_Click"></MenuItem>
+                                <Separator></Separator>
+                                <MenuItem Name="ui_editor_textEditor_contextMenu_save" Header="Save" InputGestureText="Ctrl+S" Click="ui_editor_textEditor_contextMenu_save_Click"></MenuItem>
+                                <MenuItem Name="ui_editor_textEditor_contextMenu_saveAs" Header="Save As" InputGestureText="Ctrl+Shift+S" Click="ui_editor_textEditor_contextMenu_saveAs_Click"></MenuItem>
+                            </ContextMenu>
+                        </avalonEdit:TextEditor.ContextMenu>
+                    </avalonEdit:TextEditor>
                 </Grid>
             </Grid>
         </DockPanel>

@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Telltale_Script_Editor.FileManagement;
 using Telltale_Script_Editor.GUI;
+using Telltale_Script_Editor.Utils;
 
 namespace Telltale_Script_Editor
 {
@@ -24,27 +25,67 @@ namespace Telltale_Script_Editor
     {
         private MainWindow mainWindow;
         private EditorPanelManager editorPanelManager;
+        private Enumerators enumerators;
+        private IOManagement ioManagement;
+
         /// <summary>
         /// Build configuration menu.
         /// </summary>
         public BuildConfig(MainWindow mainWindow, EditorPanelManager editorPanelManager)
         {
+            InitializeComponent();
+
             this.mainWindow = mainWindow;
             this.editorPanelManager = editorPanelManager;
+
+            enumerators = new Enumerators();
+            ioManagement = new IOManagement();
+
+            InitalizeWindow();
         }
 
-        /// <summary>
-        /// Build configuration menu - main constructor.
-        /// </summary>
-        /// <param name="x">The project manager to be used.</param>
-        public BuildConfig(EditorPanelManager editorPanelManager)
+        private void InitalizeWindow()
         {
-            InitializeComponent();
-            FileTreeManager cfgManager = new FileTreeManager(cfgTreeView, editorPanelManager.projectManager.GetWorkingDirectory(), editorPanelManager, null, true);
+            FileTreeManager cfgManager = new FileTreeManager(ui_projectTree_treeView, editorPanelManager.projectManager.GetWorkingDirectory(), editorPanelManager, null, true);
 
-            buildCfgGame.Items.Add("TWD: TTDS");
-            buildCfgGame.Items.Add("TWD S4");
+            ui_gameVersion_combobox.ItemsSource = enumerators.GameVersion_NamesList_WithSpaces();
+            ui_gameVersion_combobox.SelectedIndex = editorPanelManager.projectManager.project.Tool.Game;
+            ui_masterPriority_textBox.Text = editorPanelManager.projectManager.project.Tool.Master_Priority.ToString();
+            ui_gameExeLocation_textBox.Text = editorPanelManager.projectManager.project.Tool.Executable;
         }
 
+        private void SaveConfiguration()
+        {
+            editorPanelManager.projectManager.project.Tool.Master_Priority = int.Parse(ui_masterPriority_textBox.Text);
+            editorPanelManager.projectManager.project.Tool.Executable = ui_gameExeLocation_textBox.Text;
+            editorPanelManager.projectManager.project.Tool.Game = ui_gameVersion_combobox.SelectedIndex;
+        }
+
+        private void ui_cancel_button_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        private void ui_browseExeLocation_button_Click(object sender, RoutedEventArgs e)
+        {
+            //temp variable for file path
+            string exePath = "";
+
+            //open file browser dialog
+            ioManagement.GetFilePath(ref exePath, "Game Exe (*.exe)|*.exe", "Select the Game Exe");
+
+            //if the user cancled the operation, path will be null
+            if (string.IsNullOrEmpty(exePath))
+                return;
+
+            ui_gameExeLocation_textBox.Text = exePath;
+        }
+
+        private void ui_saveConfig_button_Click(object sender, RoutedEventArgs e)
+        {
+            SaveConfiguration();
+
+            Close();
+        }
     }
 }
